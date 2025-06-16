@@ -106,7 +106,7 @@
 
                         const data = await response.json();
                         localStorage.setItem('authToken', data.token);
-                        window.location.href = 'dashboard.html';
+                        // window.location.href = 'dashboard.html';
 
                     } catch (err) {
                         authMessage.textContent = 'Usuário ou senha inválidos';
