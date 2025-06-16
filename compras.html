@@ -216,10 +216,11 @@
                 buscarProdutos().then(produtos => {
                     todosOsProdutos = produtos;
                     produtos.forEach(p => {
-                        const option = new Option(p.nome, p.id);
-                        option.dataset.custo = p.custo;
-                        produtoSelect.appendChild(option);
-                    });
+                            console.log(p)
+                            const option = new Option(p.nomeProduto, p.id);
+                            option.dataset.custo = p.valorCusto;
+                            produtoSelect.appendChild(option);
+                        });
 
                     produtoSelect.addEventListener('change', handleProdutoSelection);
                 });
