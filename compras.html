@@ -156,16 +156,18 @@
                 btn.disabled = true;
                 btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Gerando ID da Compra...`;
                 try {
+                    const token = localStorage.getItem('authToken');
                     const novaCompra = await apiFetch('/compra/comprar', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            dataVenda: new Date().toISOString(),
-                            totalVenda: 0,
-                        }),
-                        });
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        dataVenda: new Date().toISOString(),
+                        totalVenda: 0,
+                    }),
+                    });
                     compraAtivaId = novaCompra.id;
                     renderFormularioCompra(compraAtivaId);
                 } catch (error) {
