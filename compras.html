@@ -365,18 +365,6 @@
                 }
             };
 
-            async function buscarProdutos() {
-                try {
-                    const produtos = await apiFetch('/produtos', { method: 'GET' });
-                    console.log("Produtos recebidos com sucesso da API!");
-                    return produtos;
-                } catch (error) {
-                    console.error("Falha ao buscar produtos:", error);
-                    alert("Não foi possível carregar a lista de produtos.");
-                    return []; 
-                }
-            }
-
             const renderTabelaCompras = (data) => {
                 tabelaCompras.innerHTML = !data || data.length === 0
                     ? `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Nenhuma compra registrada.</td></tr>`
