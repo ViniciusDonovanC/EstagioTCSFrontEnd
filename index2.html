@@ -49,7 +49,6 @@
 </head>
 <body class="text-gray-800">
 
-
     <div id="auth-page" class="page flex items-center justify-center min-h-screen bg-gray-100">
         <div class="max-w-md w-full mx-auto my-auto">
             <div class="bg-white shadow-2xl rounded-xl p-8">
@@ -135,7 +134,7 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-lg shadow-md">
                         <div class="p-6 border-b"><h2 class="text-xl font-semibold"><i class="fa-solid fa-list-ul text-purple-500"></i> Cadastradas</h2></div>
-                        <div id="app-message" class="p-4 text-center hidden"></div>
+                        <div id="transportadoras-app-message" class="p-4 text-center hidden"></div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
@@ -155,6 +154,47 @@
         </div>
     </div>
 
+    <div id="compras-page" class="page">
+        <nav class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="text-xl font-bold text-gray-800"><i class="fa-solid fa-box-archive text-yellow-600"></i> Gerenciar Compras</div>
+                <button data-route="dashboard" class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition"><i class="fa-solid fa-arrow-left"></i> Voltar ao Início</button>
+            </div>
+        </nav>
+        <div class="container mx-auto p-4 md:p-8">
+             <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-4 border-b pb-3"><i class="fa-solid fa-cart-plus text-green-500"></i> Nova Compra</h2>
+                        <form id="form-adicionar-compra"></form>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow-md">
+                        <div class="p-6 border-b"><h2 class="text-xl font-semibold"><i class="fa-solid fa-list-ul text-purple-500"></i> Compras Realizadas</h2></div>
+                        <div id="compras-app-message" class="p-4 text-center hidden"></div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Funcionario</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Funcionário</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantidade</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor Final</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-compras" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -162,7 +202,11 @@
             const pages = document.querySelectorAll('.page');
             const authFormsContainer = document.getElementById('auth-forms-container');
             const authMessage = document.getElementById('auth-message');
-            const appMessage = document.getElementById('app-message');
+            
+            const appMessages = {
+                transportadoras: document.getElementById('transportadoras-app-message'),
+                compras: document.getElementById('compras-app-message')
+            };
 
             const templates = {
                 loginForm: `
@@ -206,27 +250,52 @@
                         <label for="transportadora-estados" class="block text-sm font-medium text-gray-700 mb-1">Estados Atendidos</label>
                         <select id="transportadora-estados" multiple required class="w-full h-48 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </select>
-                        <p class="text-xs text-gray-500 mt-1">Segure Ctrl (Windows/Linux) ou Cmd (Mac) para selecionar múltiplos estados</p>
+                        <p class="text-xs text-gray-500 mt-1">Segure Ctrl (ou Cmd) para selecionar múltiplos.</p>
                     </div>
                     <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition disabled:opacity-50">
                         <i class="fa-solid fa-floppy-disk"></i> Salvar
+                    </button>`,
+                compraForm: `
+                    <div class="mb-4">
+                        <label for="compra-fornecedor" class="block text-sm font-medium text-gray-700 mb-1">Fornecedor</label>
+                        <input type="text" id="compra-fornecedor" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-yellow-500 focus:outline-none transition" placeholder="Nome do fornecedor">
+                    </div>
+                    <div class="mb-4">
+                        <label for="compra-produto" class="block text-sm font-medium text-gray-700 mb-1">Produto</label>
+                        <input type="text" id="compra-produto" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-yellow-500 focus:outline-none transition" placeholder="Nome do produto">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                           <label for="compra-quantidade" class="block text-sm font-medium text-gray-700 mb-1">Quantidade</label>
+                           <input type="number" id="compra-quantidade" required min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-yellow-500 focus:outline-none transition" placeholder="0">
+                        </div>
+                        <div>
+                           <label for="compra-valor" class="block text-sm font-medium text-gray-700 mb-1">Valor Unitário (R$)</label>
+                           <input type="number" id="compra-valor" required min="0.01" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-yellow-500 focus:outline-none transition" placeholder="0.00">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-yellow-600 text-white font-bold py-2 px-4 rounded-md hover:bg-yellow-700 transition disabled:opacity-50">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar Compra
                     </button>`
             };
             
+            // --- CORREÇÃO 2: NAVEGAÇÃO MAIS ROBUSTA ---
             const navigateTo = (pageId) => {
+                // Garante que todas as páginas estão escondidas antes de mostrar a nova
                 pages.forEach(p => {
                     p.classList.remove('active');
-                    p.style.display = 'none';
+                    p.style.display = 'none'; // Força o elemento a ficar oculto
                 });
                 
                 const targetPage = document.getElementById(`${pageId}-page`);
                 if (targetPage) {
                     targetPage.classList.add('active');
-                    targetPage.style.display = 'block';
+                    targetPage.style.display = 'block'; // Força o elemento a ser exibido
                     
-                    if (pageId === 'transportadoras') {
-                        renderTransportadoraPage();
-                    }
+                    // Carregar dados específicos da página
+                    if (pageId === 'transportadoras') renderTransportadoraPage();
+                    if (pageId === 'compras') renderCompraPage();
+
                 } else {
                     console.error(`Página ${pageId} não encontrada`);
                 }
@@ -237,12 +306,7 @@
                 if (routeTarget) {
                     e.preventDefault();
                     const route = routeTarget.dataset.route;
-                    const targetPage = document.getElementById(`${route}-page`);
-                    if (targetPage) {
-                         navigateTo(route);
-                    } else {
-                        alert(`Funcionalidade "${route}" ainda não implementada.`);
-                    }
+                    navigateTo(route);
                 }
 
                 const tabTarget = e.target.closest('.tab-btn');
@@ -255,12 +319,12 @@
             const renderAuthForm = (tab = 'login') => {
                 authFormsContainer.innerHTML = templates[`${tab}Form`];
                 document.querySelectorAll('.tab-btn').forEach(btn => {
-                    btn.classList.remove('text-green-600', 'border-green-600', 'border-b-2');
+                    btn.classList.remove('text-green-600', 'border-b-2', 'border-green-600');
                     btn.classList.add('text-gray-500');
                 });
                 const activeTab = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
                 activeTab.classList.remove('text-gray-500');
-                activeTab.classList.add('text-green-600', 'border-green-600', 'border-b-2');
+                activeTab.classList.add('text-green-600', 'border-b-2', 'border-green-600');
             };
             
             authFormsContainer.addEventListener('submit', async (e) => {
@@ -269,12 +333,9 @@
                 const submitButton = e.target.querySelector('button[type="submit"]');
                 const originalButtonText = submitButton.innerHTML;
                 
-                if (formId === 'register-form') {
-                    const senha = document.getElementById('register-senha').value;
-                    if (senha.length < 6) {
-                        showMessage(authMessage, 'A senha deve ter pelo menos 6 caracteres.', 'erro');
-                        return;
-                    }
+                if (formId === 'register-form' && document.getElementById('register-senha').value.length < 6) {
+                    showMessage(authMessage, 'A senha deve ter pelo menos 6 caracteres.', 'erro');
+                    return;
                 }
                 
                 submitButton.disabled = true;
@@ -284,46 +345,21 @@
                     if (formId === 'login-form') {
                         const login = document.getElementById('login-email').value.trim();
                         const senha = document.getElementById('login-senha').value;
-                        
-                        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                            method: 'POST', 
-                            headers: {'Content-Type': 'application/json'}, 
-                            body: JSON.stringify({login, senha})
-                        });
-                        
-                        if (!response.ok) {
-                            const errorText = await response.text();
-                            throw new Error(errorText || 'Credenciais inválidas.');
-                        }
-                        
+                        const response = await fetch(`${API_BASE_URL}/auth/login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({login, senha})});
+                        if (!response.ok) throw new Error(await response.text() || 'Credenciais inválidas.');
                         const data = await response.json();
-                        if (data.token) {
-                            window.authToken = data.token;
-                            navigateTo('dashboard');
-                        } else {
-                            throw new Error('Token não recebido.');
-                        }
+                        window.authToken = data.token;
+                        navigateTo('dashboard');
                     } else if (formId === 'register-form') {
                         const login = document.getElementById('register-email').value.trim();
                         const senha = document.getElementById('register-senha').value;
                         const acesso = document.getElementById('register-acesso').value;
-                        
-                        const response = await fetch(`${API_BASE_URL}/auth/register`, {
-                            method: 'POST', 
-                            headers: {'Content-Type': 'application/json'}, 
-                            body: JSON.stringify({login, senha, acesso})
-                        });
-                        
-                        if (!response.ok) {
-                            const errorText = await response.text();
-                            throw new Error(errorText || 'Erro no cadastro. Verifique os dados.');
-                        }
-                        
+                        const response = await fetch(`${API_BASE_URL}/auth/register`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({login, senha, acesso})});
+                        if (!response.ok) throw new Error(await response.text() || 'Erro no cadastro.');
                         showMessage(authMessage, 'Cadastro realizado com sucesso! Faça o login.', 'sucesso');
                         renderAuthForm('login');
                     }
                 } catch (error) {
-                    console.error('Erro na autenticação:', error);
                     showMessage(authMessage, error.message, 'erro');
                 } finally {
                     submitButton.disabled = false;
@@ -339,178 +375,163 @@
             document.getElementById('logout-btn').addEventListener('click', logout);
             
             const apiFetch = async (endpoint, options = {}) => {
-                const token = window.authToken;
-                if (!token) { 
-                    logout(); 
-                    throw new Error('Sessão expirada. Faça login novamente.'); 
-                }
-                
-                const config = { 
-                    ...options, 
-                    headers: { 
-                        'Authorization': `Bearer ${token}`, 
-                        'Content-Type': 'application/json', 
-                        ...options.headers 
-                    } 
-                };
-                
+                // Deixei esta linha comentada como você pediu, para seus testes.
+                // if (!window.authToken) { logout(); throw new Error('Sessão expirada.'); }
+                const config = { ...options, headers: { 'Authorization': `Bearer ${window.authToken}`, 'Content-Type': 'application/json', ...options.headers } };
                 const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-                
-                if (response.status === 401 || response.status === 403) { 
-                    logout(); 
-                    throw new Error('Sessão expirada ou acesso negado.'); 
-                }
-                
-                if (!response.ok) { 
-                    const errorText = await response.text();
-                    throw new Error(errorText || `Erro ${response.status}`); 
-                }
-                
+                if (response.status === 401 || response.status === 403) { logout(); throw new Error('Acesso negado.'); }
+                if (!response.ok) { throw new Error(await response.text() || `Erro ${response.status}`); }
                 return response.status === 204 ? null : response.json();
             };
             
+            // --- LÓGICA DE TRANSPORTADORAS ---
             const renderTransportadoraPage = () => {
-                const formContainer = document.getElementById('form-adicionar-transportadora');
-                formContainer.innerHTML = templates.transportadoraForm;
-                
+                const form = document.getElementById('form-adicionar-transportadora');
+                form.innerHTML = templates.transportadoraForm;
                 const selectEstados = document.getElementById('transportadora-estados');
-                const estadosBrasileiros = [
-                    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 
-                    'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 
-                    'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
-                ];
-                
-                estadosBrasileiros.forEach(sigla => {
-                    const option = document.createElement('option');
-                    option.value = sigla;
-                    option.textContent = sigla;
-                    selectEstados.appendChild(option);
+                selectEstados.innerHTML = ''; // Limpa para evitar duplicatas
+                ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'].forEach(sigla => {
+                    selectEstados.innerHTML += `<option value="${sigla}">${sigla}</option>`;
                 });
-                
-                formContainer.addEventListener('submit', handleAddTransportadora);
+                form.addEventListener('submit', handleAddTransportadora);
                 document.getElementById('tabela-transportadoras').addEventListener('click', handleDeleteTransportadora);
-                
                 fetchTransportadoras();
             };
 
             const fetchTransportadoras = async () => {
                 try {
                     const data = await apiFetch('/transportadoras');
-                    renderTabelaTransportadoras(data);
-                } catch (error) {
-                    console.error('Erro ao buscar transportadoras:', error);
-                    showMessage(appMessage, error.message, 'erro');
-                }
-            };
-            
-            const renderTabelaTransportadoras = (data) => {
-                const tabela = document.getElementById('tabela-transportadoras');
-                tabela.innerHTML = '';
-                
-                if (!data || data.length === 0) {
-                     tabela.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Nenhuma transportadora cadastrada.</td></tr>`;
-                     return;
-                }
-                
-                data.forEach(t => {
-                    const row = document.createElement('tr');
-                    row.className = 'hover:bg-gray-50';
-                    
-                    const estadosHtml = t.estadosCobertura && t.estadosCobertura.length > 0 
-                        ? t.estadosCobertura.map(e => `<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${e}</span>`).join(' ')
-                        : '<span class="text-gray-400">Nenhum estado</span>';
-                    
-                    row.innerHTML = `
-                        <td class="px-6 py-4 text-sm">${t.id}</td>
-                        <td class="px-6 py-4 text-sm font-medium">${t.nome}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex flex-wrap gap-1">
-                                ${estadosHtml}
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <button class="btn-excluir text-red-600 hover:text-red-900 hover:bg-red-50 p-2 rounded transition" data-id="${t.id}" title="Excluir transportadora">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </td>
-                    `;
-                    
-                    tabela.appendChild(row);
-                });
+                    const tabela = document.getElementById('tabela-transportadoras');
+                    tabela.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        tabela.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Nenhuma transportadora cadastrada.</td></tr>`;
+                        return;
+                    }
+                    data.forEach(t => {
+                        const row = tabela.insertRow();
+                        row.className = 'hover:bg-gray-50';
+                        const estadosHtml = t.estadosCobertura?.map(e => `<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${e}</span>`).join(' ') || '';
+                        row.innerHTML = `
+                            <td class="px-6 py-4 text-sm">${t.id}</td>
+                            <td class="px-6 py-4 text-sm font-medium">${t.nome}</td>
+                            <td class="px-6 py-4"><div class="flex flex-wrap gap-1">${estadosHtml}</div></td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="btn-excluir text-red-600 hover:text-red-900" data-id="${t.id}" title="Excluir"><i class="fa-solid fa-trash-can"></i></button>
+                            </td>`;
+                    });
+                } catch (error) { showMessage(appMessages.transportadoras, error.message, 'erro'); }
             };
 
             const handleAddTransportadora = async (e) => {
                 e.preventDefault();
-                
                 const nome = document.getElementById('transportadora-nome').value.trim();
                 const estados = Array.from(document.getElementById('transportadora-estados').selectedOptions).map(o => o.value);
+                if (!nome || estados.length === 0) { showMessage(appMessages.transportadoras, 'Todos os campos são obrigatórios.', 'erro'); return; }
                 
-                if (!nome) {
-                    showMessage(appMessage, 'Nome da transportadora é obrigatório.', 'erro');
-                    return;
-                }
-                
-                if (estados.length === 0) {
-                    showMessage(appMessage, 'Selecione pelo menos um estado.', 'erro');
-                    return;
-                }
-                
-                const submitButton = e.target.querySelector('button[type="submit"]');
-                const originalText = submitButton.innerHTML;
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
-                
+                const btn = e.target.querySelector('button');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
                 try {
-                    await apiFetch('/transportadoras/registro', { 
-                        method: 'POST', 
-                        body: JSON.stringify({ nome, estadosAtendidos: estados }) 
-                    });
-                    showMessage(appMessage, 'Transportadora salva com sucesso!', 'sucesso');
+                    await apiFetch('/transportadoras/registro', { method: 'POST', body: JSON.stringify({ nome, estadosAtendidos: estados }) });
+                    showMessage(appMessages.transportadoras, 'Transportadora salva!', 'sucesso');
                     e.target.reset();
                     fetchTransportadoras();
-                } catch(error) { 
-                    console.error('Erro ao salvar transportadora:', error);
-                    showMessage(appMessage, `Erro: ${error.message}`, 'erro'); 
-                } finally {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = originalText;
-                }
+                } catch(error) { showMessage(appMessages.transportadoras, `Erro: ${error.message}`, 'erro'); } finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar'; }
             };
 
             const handleDeleteTransportadora = async (e) => {
                 const btn = e.target.closest('.btn-excluir');
-                if (btn) {
-                    const id = btn.dataset.id;
-                    if (confirm(`Tem certeza que deseja excluir a transportadora ID ${id}?`)) {
-                        try {
-                           await apiFetch(`/transportadoras/${id}`, { method: 'DELETE' });
-                           showMessage(appMessage, 'Transportadora excluída com sucesso!', 'sucesso');
-                           fetchTransportadoras();
-                        } catch(error) { 
-                            console.error('Erro ao excluir transportadora:', error);
-                            showMessage(appMessage, `Erro: ${error.message}`, 'erro'); 
-                        }
-                    }
+                if (btn && confirm(`Excluir transportadora ID ${btn.dataset.id}?`)) {
+                    try {
+                       await apiFetch(`/transportadoras/${btn.dataset.id}`, { method: 'DELETE' });
+                       showMessage(appMessages.transportadoras, 'Excluído com sucesso!', 'sucesso');
+                       fetchTransportadoras();
+                    } catch(error) { showMessage(appMessages.transportadoras, `Erro: ${error.message}`, 'erro'); }
                 }
             };
+            
+            // --- LÓGICA DE COMPRAS ---
+            const renderCompraPage = () => {
+                const form = document.getElementById('form-adicionar-compra');
+                form.innerHTML = templates.compraForm;
+                form.addEventListener('submit', handleAddCompra);
+                document.getElementById('tabela-compras').addEventListener('click', handleDeleteCompra);
+                fetchCompras();
+            };
+            
+            const fetchCompras = async () => {
+                try {
+                    const data = await apiFetch('/compras'); 
+                    const tabela = document.getElementById('tabela-compras');
+                    tabela.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        tabela.innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Nenhuma compra registrada.</td></tr>`;
+                        return;
+                    }
+                    data.forEach(c => {
+                        const row = tabela.insertRow();
+                        row.className = 'hover:bg-gray-50';
+                        const valorTotal = (c.quantidade * c.valorUnitario).toFixed(2);
+                        row.innerHTML = `
+                            <td class="px-6 py-4 text-sm">${c.id}</td>
+                            <td class="px-6 py-4 text-sm font-medium">${c.produto}</td>
+                            <td class="px-6 py-4 text-sm">${c.fornecedor}</td>
+                            <td class="px-6 py-4 text-sm">${c.quantidade}</td>
+                            <td class="px-6 py-4 text-sm">R$ ${valorTotal}</td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="btn-excluir-compra text-red-600 hover:text-red-900" data-id="${c.id}" title="Excluir"><i class="fa-solid fa-trash-can"></i></button>
+                            </td>`;
+                    });
+                } catch (error) { showMessage(appMessages.compras, error.message, 'erro'); }
+            };
 
+            const handleAddCompra = async (e) => {
+                e.preventDefault();
+                const fornecedor = document.getElementById('compra-fornecedor').value.trim();
+                const produto = document.getElementById('compra-produto').value.trim();
+                const quantidade = document.getElementById('compra-quantidade').value;
+                const valorUnitario = document.getElementById('compra-valor').value;
+
+                if (!fornecedor || !produto || !quantidade || !valorUnitario) {
+                    showMessage(appMessages.compras, 'Todos os campos são obrigatórios.', 'erro');
+                    return;
+                }
+                
+                const btn = e.target.querySelector('button');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+                try {
+                    await apiFetch('/compras/registro', { method: 'POST', body: JSON.stringify({ fornecedor, produto, quantidade, valorUnitario }) });
+                    showMessage(appMessages.compras, 'Compra registrada com sucesso!', 'sucesso');
+                    e.target.reset();
+                    fetchCompras();
+                } catch(error) { showMessage(appMessages.compras, `Erro: ${error.message}`, 'erro'); } finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Compra'; }
+            };
+
+            const handleDeleteCompra = async (e) => {
+                const btn = e.target.closest('.btn-excluir-compra');
+                if (btn && confirm(`Excluir compra ID ${btn.dataset.id}?`)) {
+                     try {
+                       await apiFetch(`/compras/${btn.dataset.id}`, { method: 'DELETE' });
+                       showMessage(appMessages.compras, 'Compra excluída com sucesso!', 'sucesso');
+                       fetchCompras();
+                    } catch(error) { showMessage(appMessages.compras, `Erro: ${error.message}`, 'erro'); }
+                }
+            };
+            
             function showMessage(element, text, type = 'sucesso') {
+                if (!element) return;
+                element.style.display = 'block';
                 element.textContent = text;
                 element.className = `p-4 text-center rounded-md mx-4 my-2 ${type === 'sucesso' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`;
-                element.classList.remove('hidden');
-                setTimeout(() => {
-                    element.classList.add('hidden');
+                setTimeout(() => { 
+                    element.style.display = 'none';
                     element.textContent = '';
                     element.className = 'p-4 text-center hidden';
                 }, 5000);
             }
 
             const initializeApp = () => {
-                pages.forEach(p => {
-                    p.classList.remove('active');
-                    p.style.display = 'none';
-                });
-                
                 if (!window.authToken) {
                     navigateTo('dashboard');
                 } else {
@@ -518,7 +539,6 @@
                     renderAuthForm('login');
                 }
             };
-            
 
             initializeApp();
         });
