@@ -270,8 +270,8 @@
                     buscarProdutos().then(produtos => {
                         todosOsProdutos = produtos;
                         produtos.forEach(p => {
-                            const option = new Option(p.nome, p.id);
-                            option.dataset.custo = p.custo;
+                            const option = new Option(p.nomeProduto, p.id);
+                            option.dataset.custo = p.valorCusto;
                             produtoSelect.appendChild(option);
                         });
                     });
