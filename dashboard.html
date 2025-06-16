@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sistema de Gestão de Farmácia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .page-content { animation: fadeIn 0.4s ease-in-out; }
+        .dashboard-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="page-content">
+        <nav class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="text-xl font-bold text-gray-800"><i class="fa-solid fa-house-medical text-green-500"></i> Início</div>
+                <a href="index.html" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair
+                </a>
+            </div>
+        </nav>
+        <div class="container mx-auto p-6">
+            <h1 class="text-3xl font-bold mb-6">Painel de Controle</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <a href="transportadoras.html" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-blue-100 rounded-full"><i class="fa-solid fa-truck-fast text-2xl text-blue-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Transportadoras</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Gerenciar parceiros de logística.</p>
+                </a>
+                <a href="vendas.html" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-green-100 rounded-full"><i class="fa-solid fa-cash-register text-2xl text-green-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Vendas</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Registrar e consultar vendas.</p>
+                </a>
+                <a href="compras.html" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-yellow-100 rounded-full"><i class="fa-solid fa-box-archive text-2xl text-yellow-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Compras</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Gerenciar compras de produtos.</p>
+                </a>
+                <div class="dashboard-card bg-gray-200 p-6 rounded-lg shadow-inner cursor-not-allowed">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-purple-200 rounded-full"><i class="fa-solid fa-users text-2xl text-purple-400"></i></div>
+                        <h2 class="text-xl font-semibold ml-4 text-gray-500">Funcionários</h2>
+                    </div>
+                    <p class="text-gray-500 mt-2">Funcionalidade não implementada.</p>
+                </div>
+                <div class="dashboard-card bg-gray-200 p-6 rounded-lg shadow-inner cursor-not-allowed">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-pink-200 rounded-full"><i class="fa-solid fa-briefcase text-2xl text-pink-400"></i></div>
+                        <h2 class="text-xl font-semibold ml-4 text-gray-500">Setores</h2>
+                    </div>
+                    <p class="text-gray-500 mt-2">Funcionalidade não implementada.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
