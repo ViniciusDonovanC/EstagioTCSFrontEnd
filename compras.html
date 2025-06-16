@@ -270,6 +270,7 @@
                     buscarProdutos().then(produtos => {
                         todosOsProdutos = produtos;
                         produtos.forEach(p => {
+                            console.log(p)
                             const option = new Option(p.nomeProduto, p.id);
                             option.dataset.custo = p.valorCusto;
                             produtoSelect.appendChild(option);
