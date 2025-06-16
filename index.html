@@ -27,11 +27,8 @@
                     <button data-tab="login" class="tab-btn flex-1 py-2 font-semibold text-green-600 border-b-2 border-green-600">Login</button>
                     <button data-tab="register" class="tab-btn flex-1 py-2 font-semibold text-gray-500">Cadastro</button>
                 </div>
-                <div class="mt-6 text-center">
-                    <a href="dashboard.html" class="text-sm text-blue-600 hover:underline">
-                        Pular para o Dashboard (Modo de Teste)
-                    </a>
-                </div>
+                <div id="auth-forms-container"></div>
+                <div id="auth-message" class="mt-4 text-center text-sm h-5"></div>
             </div>
         </div>
     </div>
@@ -86,6 +83,63 @@
                 activeTab.classList.add('text-green-600', 'border-green-600', 'border-b-2');
             };
 
+            authFormsContainer.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const authMessage = document.getElementById('auth-message');
+                authMessage.textContent = '';
+
+                if (form.id === 'login-form') {
+                    const login = document.getElementById('login-email').value.trim();
+                    const senha = document.getElementById('login-senha').value.trim();
+
+                    try {
+                        const response = await fetch('http://localhost:8080/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ login, senha })
+                        });
+
+                        if (!response.ok) throw new Error('Login inválido');
+
+                        const data = await response.json();
+                        localStorage.setItem('authToken', data.token);
+                        window.location.href = 'dashboard.html';
+
+                    } catch (err) {
+                        authMessage.textContent = 'Usuário ou senha inválidos';
+                        authMessage.classList.add('text-red-500');
+                    }
+                }
+
+                if (form.id === 'register-form') {
+                    const email = document.getElementById('register-email').value.trim();
+                    const senha = document.getElementById('register-senha').value.trim();
+                    const acesso = document.getElementById('register-acesso').value;
+
+                    try {
+                        const response = await fetch('http://localhost:8080/auth/register', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, senha, acesso })
+                        });
+
+                        if (!response.ok) throw new Error('Erro ao cadastrar');
+
+                        authMessage.textContent = 'Cadastro realizado com sucesso!';
+                        authMessage.classList.remove('text-red-500');
+                        authMessage.classList.add('text-green-600');
+
+                        renderAuthForm('login');
+
+                    } catch (err) {
+                        authMessage.textContent = 'Erro no cadastro';
+                        authMessage.classList.add('text-red-500');
+                    }
+                }
+            });
+
+
             document.body.addEventListener('click', (e) => {
                 const tabTarget = e.target.closest('.tab-btn');
                 if (tabTarget) {
@@ -95,12 +149,9 @@
 
             authFormsContainer.addEventListener('submit', (e) => {
                 e.preventDefault();
-                // Em uma aplicação real, aqui você faria a chamada de API.
-                // Para este exemplo, simplesmente redirecionamos para o dashboard.
                 window.location.href = 'dashboard.html';
             });
 
-            // Renderiza o formulário de login por padrão.
             renderAuthForm('login');
         });
     </script>
