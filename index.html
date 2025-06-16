@@ -100,6 +100,8 @@
                             body: JSON.stringify({ login, senha })
                         });
 
+                        console.log(response);
+
                         if (!response.ok) throw new Error('Login inválido');
 
                         const data = await response.json();
