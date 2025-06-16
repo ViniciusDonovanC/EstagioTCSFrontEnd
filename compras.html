@@ -155,7 +155,7 @@
                 btn.disabled = true;
                 btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Gerando ID da Compra...`;
                 try {
-                    const novaCompra = await apiFetch('/compras/iniciar', { method: 'POST' });
+                    const novaCompra = await apiFetch('/compra/comprar', { method: 'POST' });
                     compraAtivaId = novaCompra.id;
                     renderFormularioCompra(compraAtivaId);
                 } catch (error) {
