@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Farmácia</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Por padrão, todas as páginas estão escondidas */
+        .page { 
+            display: none; 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            min-height: 100vh;
+        }
+        /* A página com a classe 'active' é a única visível */
+        .page.active { 
+            display: block; 
+            position: relative;
+            animation: fadeIn 0.4s ease-in-out; 
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .dashboard-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Tela de Autenticação (Login/Cadastro) -->
+    <div id="auth-page" class="page flex items-center justify-center min-h-screen bg-gray-100">
+        <div class="w-full max-w-md">
+            <div class="bg-white shadow-2xl rounded-xl p-8">
+                <div class="text-center mb-8">
+                     <i class="fa-solid fa-pills text-5xl text-green-500"></i>
+                     <h1 class="text-3xl font-bold text-gray-900 mt-4">Sistema da Farmácia</h1>
+                     <p class="text-gray-500">Acesse para gerenciar o sistema.</p>
+                </div>
+                <div class="flex border-b mb-6">
+                    <button data-tab="login" class="tab-btn flex-1 py-2 font-semibold text-green-600 border-b-2 border-green-600">Login</button>
+                    <button data-tab="register" class="tab-btn flex-1 py-2 font-semibold text-gray-500">Cadastro</button>
+                </div>
+                <!-- Formulários de Login e Cadastro -->
+                <div id="auth-forms-container"></div>
+                <div id="auth-message" class="mt-4 text-center text-sm h-5"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela Principal (Dashboard) -->
+    <div id="dashboard-page" class="page">
+        <nav class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="text-xl font-bold text-gray-800"><i class="fa-solid fa-house-medical text-green-500"></i> Início</div>
+                <button id="logout-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+            </div>
+        </nav>
+        <div class="container mx-auto p-6">
+            <h1 class="text-3xl font-bold mb-6">Painel de Controle</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Card de Transportadoras -->
+                <div data-route="transportadoras" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-blue-100 rounded-full"><i class="fa-solid fa-truck-fast text-2xl text-blue-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Transportadoras</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Gerenciar parceiros de logística.</p>
+                </div>
+                <!-- Outros Cards (placeholders) -->
+                <div data-route="vendas" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                     <div class="flex items-center">
+                        <div class="p-3 bg-green-100 rounded-full"><i class="fa-solid fa-cash-register text-2xl text-green-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Vendas</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Registrar e consultar vendas.</p>
+                </div>
+                <div data-route="compras" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                     <div class="flex items-center">
+                        <div class="p-3 bg-yellow-100 rounded-full"><i class="fa-solid fa-box-archive text-2xl text-yellow-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Compras</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Gerenciar compras de produtos.</p>
+                </div>
+                <div data-route="funcionarios" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-purple-100 rounded-full"><i class="fa-solid fa-users text-2xl text-purple-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Funcionários</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Administrar equipa e acessos.</p>
+                </div>
+                <div data-route="setores" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-pink-100 rounded-full"><i class="fa-solid fa-briefcase text-2xl text-pink-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Setores</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Configurar setores da farmácia.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tela de Gerenciamento de Transportadoras -->
+    <div id="transportadoras-page" class="page">
+        <nav class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="text-xl font-bold text-gray-800"><i class="fa-solid fa-truck-fast text-blue-600"></i> Gerenciar Transportadoras</div>
+                <button data-route="dashboard" class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition"><i class="fa-solid fa-arrow-left"></i> Voltar ao Início</button>
+            </div>
+        </nav>
+        <div class="container mx-auto p-4 md:p-8">
+             <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-4 border-b pb-3"><i class="fa-solid fa-plus-circle text-green-500"></i> Nova Transportadora</h2>
+                        <form id="form-adicionar-transportadora"></form>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow-md">
+                        <div class="p-6 border-b"><h2 class="text-xl font-semibold"><i class="fa-solid fa-list-ul text-purple-500"></i> Cadastradas</h2></div>
+                        <div id="app-message" class="p-4 text-center hidden"></div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cobertura</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-transportadoras" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_BASE_URL = 'http://localhost:8080';
+            const pages = document.querySelectorAll('.page');
+            const authFormsContainer = document.getElementById('auth-forms-container');
+            const authMessage = document.getElementById('auth-message');
+            const appMessage = document.getElementById('app-message');
+
+            const templates = {
+                loginForm: `
+                    <form id="login-form">
+                        <div class="mb-4">
+                            <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Login (Email)</label>
+                            <input type="email" id="login-email" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none transition" placeholder="seu.email@exemplo.com">
+                        </div>
+                        <div class="mb-6">
+                            <label for="login-senha" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                            <input type="password" id="login-senha" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none transition" placeholder="••••••••">
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition disabled:opacity-50">Entrar</button>
+                    </form>`,
+                registerForm: `
+                    <form id="register-form">
+                        <div class="mb-4">
+                            <label for="register-email" class="block text-sm font-medium text-gray-700 mb-1">Login (Email)</label>
+                            <input type="email" id="register-email" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="seu.email@exemplo.com">
+                        </div>
+                        <div class="mb-4">
+                            <label for="register-senha" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                            <input type="password" id="register-senha" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="••••••••">
+                        </div>
+                        <div class="mb-6">
+                            <label for="register-acesso" class="block text-sm font-medium text-gray-700 mb-1">Função</label>
+                            <select id="register-acesso" required class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
+                                <option value="">Selecione uma função</option>
+                                <option value="GERENTE">Gerente</option>
+                                <option value="FUNCIONARIO">Funcionário</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition disabled:opacity-50">Cadastrar</button>
+                    </form>`,
+                transportadoraForm: `
+                    <div class="mb-4">
+                        <label for="transportadora-nome" class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                        <input type="text" id="transportadora-nome" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Nome da transportadora">
+                    </div>
+                    <div class="mb-4">
+                        <label for="transportadora-estados" class="block text-sm font-medium text-gray-700 mb-1">Estados Atendidos</label>
+                        <select id="transportadora-estados" multiple required class="w-full h-48 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Segure Ctrl (Windows/Linux) ou Cmd (Mac) para selecionar múltiplos estados</p>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition disabled:opacity-50">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar
+                    </button>`
+            };
+            
+            // LÓGICA DE NAVEGAÇÃO / ROTEAMENTO
+            const navigateTo = (pageId) => {
+                // Remove a classe 'active' de todas as páginas
+                pages.forEach(p => {
+                    p.classList.remove('active');
+                    p.style.display = 'none';
+                });
+                
+                // Adiciona a classe 'active' apenas à página de destino
+                const targetPage = document.getElementById(`${pageId}-page`);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                    targetPage.style.display = 'block';
+                    
+                    if (pageId === 'transportadoras') {
+                        renderTransportadoraPage();
+                    }
+                } else {
+                    console.error(`Página ${pageId} não encontrada`);
+                }
+            };
+
+            document.body.addEventListener('click', (e) => {
+                const routeTarget = e.target.closest('[data-route]');
+                if (routeTarget) {
+                    e.preventDefault();
+                    const route = routeTarget.dataset.route;
+                    const targetPage = document.getElementById(`${route}-page`);
+                    if (targetPage) {
+                         navigateTo(route);
+                    } else {
+                        alert(`Funcionalidade "${route}" ainda não implementada.`);
+                    }
+                }
+
+                const tabTarget = e.target.closest('.tab-btn');
+                if (tabTarget) {
+                    const tab = tabTarget.dataset.tab;
+                    renderAuthForm(tab);
+                }
+            });
+            
+            // LÓGICA DE AUTENTICAÇÃO
+            const renderAuthForm = (tab = 'login') => {
+                authFormsContainer.innerHTML = templates[`${tab}Form`];
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('text-green-600', 'border-green-600', 'border-b-2');
+                    btn.classList.add('text-gray-500');
+                });
+                const activeTab = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+                activeTab.classList.remove('text-gray-500');
+                activeTab.classList.add('text-green-600', 'border-green-600', 'border-b-2');
+            };
+            
+            authFormsContainer.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formId = e.target.id;
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                
+                // Validações básicas
+                if (formId === 'register-form') {
+                    const senha = document.getElementById('register-senha').value;
+                    if (senha.length < 6) {
+                        showMessage(authMessage, 'A senha deve ter pelo menos 6 caracteres.', 'erro');
+                        return;
+                    }
+                }
+                
+                submitButton.disabled = true;
+                submitButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processando...`;
+
+                try {
+                    if (formId === 'login-form') {
+                        const login = document.getElementById('login-email').value.trim();
+                        const senha = document.getElementById('login-senha').value;
+                        
+                        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                            method: 'POST', 
+                            headers: {'Content-Type': 'application/json'}, 
+                            body: JSON.stringify({login, senha})
+                        });
+                        
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(errorText || 'Credenciais inválidas.');
+                        }
+                        
+                        const data = await response.json();
+                        if (data.token) {
+                            // Armazenar token em variável em memória para esta sessão
+                            window.authToken = data.token;
+                            navigateTo('dashboard');
+                        } else {
+                            throw new Error('Token não recebido.');
+                        }
+                    } else if (formId === 'register-form') {
+                        const login = document.getElementById('register-email').value.trim();
+                        const senha = document.getElementById('register-senha').value;
+                        const acesso = document.getElementById('register-acesso').value;
+                        
+                        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                            method: 'POST', 
+                            headers: {'Content-Type': 'application/json'}, 
+                            body: JSON.stringify({login, senha, acesso})
+                        });
+                        
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(errorText || 'Erro no cadastro. Verifique os dados.');
+                        }
+                        
+                        showMessage(authMessage, 'Cadastro realizado com sucesso! Faça o login.', 'sucesso');
+                        renderAuthForm('login');
+                    }
+                } catch (error) {
+                    console.error('Erro na autenticação:', error);
+                    showMessage(authMessage, error.message, 'erro');
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                }
+            });
+            
+            const logout = () => {
+                window.authToken = null;
+                navigateTo('auth');
+                renderAuthForm('login');
+            };
+            document.getElementById('logout-btn').addEventListener('click', logout);
+            
+            // LÓGICA DE API (Fetch seguro)
+            const apiFetch = async (endpoint, options = {}) => {
+                const token = window.authToken;
+                if (!token) { 
+                    logout(); 
+                    throw new Error('Sessão expirada. Faça login novamente.'); 
+                }
+                
+                const config = { 
+                    ...options, 
+                    headers: { 
+                        'Authorization': `Bearer ${token}`, 
+                        'Content-Type': 'application/json', 
+                        ...options.headers 
+                    } 
+                };
+                
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                
+                if (response.status === 401 || response.status === 403) { 
+                    logout(); 
+                    throw new Error('Sessão expirada ou acesso negado.'); 
+                }
+                
+                if (!response.ok) { 
+                    const errorText = await response.text();
+                    throw new Error(errorText || `Erro ${response.status}`); 
+                }
+                
+                return response.status === 204 ? null : response.json();
+            };
+            
+            // LÓGICA DA PÁGINA DE TRANSPORTADORAS
+            const renderTransportadoraPage = () => {
+                const formContainer = document.getElementById('form-adicionar-transportadora');
+                formContainer.innerHTML = templates.transportadoraForm;
+                
+                const selectEstados = document.getElementById('transportadora-estados');
+                const estadosBrasileiros = [
+                    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 
+                    'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 
+                    'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+                ];
+                
+                estadosBrasileiros.forEach(sigla => {
+                    const option = document.createElement('option');
+                    option.value = sigla;
+                    option.textContent = sigla;
+                    selectEstados.appendChild(option);
+                });
+                
+                formContainer.addEventListener('submit', handleAddTransportadora);
+                document.getElementById('tabela-transportadoras').addEventListener('click', handleDeleteTransportadora);
+                
+                fetchTransportadoras();
+            };
+
+            const fetchTransportadoras = async () => {
+                try {
+                    const data = await apiFetch('/transportadoras');
+                    renderTabelaTransportadoras(data);
+                } catch (error) {
+                    console.error('Erro ao buscar transportadoras:', error);
+                    showMessage(appMessage, error.message, 'erro');
+                }
+            };
+            
+            const renderTabelaTransportadoras = (data) => {
+                const tabela = document.getElementById('tabela-transportadoras');
+                tabela.innerHTML = '';
+                
+                if (!data || data.length === 0) {
+                     tabela.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Nenhuma transportadora cadastrada.</td></tr>`;
+                     return;
+                }
+                
+                data.forEach(t => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    
+                    const estadosHtml = t.estadosCobertura && t.estadosCobertura.length > 0 
+                        ? t.estadosCobertura.map(e => `<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${e}</span>`).join(' ')
+                        : '<span class="text-gray-400">Nenhum estado</span>';
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4 text-sm">${t.id}</td>
+                        <td class="px-6 py-4 text-sm font-medium">${t.nome}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap gap-1">
+                                ${estadosHtml}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button class="btn-excluir text-red-600 hover:text-red-900 hover:bg-red-50 p-2 rounded transition" data-id="${t.id}" title="Excluir transportadora">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tabela.appendChild(row);
+                });
+            };
+
+            const handleAddTransportadora = async (e) => {
+                e.preventDefault();
+                
+                const nome = document.getElementById('transportadora-nome').value.trim();
+                const estados = Array.from(document.getElementById('transportadora-estados').selectedOptions).map(o => o.value);
+                
+                if (!nome) {
+                    showMessage(appMessage, 'Nome da transportadora é obrigatório.', 'erro');
+                    return;
+                }
+                
+                if (estados.length === 0) {
+                    showMessage(appMessage, 'Selecione pelo menos um estado.', 'erro');
+                    return;
+                }
+                
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                const originalText = submitButton.innerHTML;
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+                
+                try {
+                    await apiFetch('/transportadoras/registro', { 
+                        method: 'POST', 
+                        body: JSON.stringify({ nome, estadosAtendidos: estados }) 
+                    });
+                    showMessage(appMessage, 'Transportadora salva com sucesso!', 'sucesso');
+                    e.target.reset();
+                    fetchTransportadoras();
+                } catch(error) { 
+                    console.error('Erro ao salvar transportadora:', error);
+                    showMessage(appMessage, `Erro: ${error.message}`, 'erro'); 
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }
+            };
+
+            const handleDeleteTransportadora = async (e) => {
+                const btn = e.target.closest('.btn-excluir');
+                if (btn) {
+                    const id = btn.dataset.id;
+                    if (confirm(`Tem certeza que deseja excluir a transportadora ID ${id}?`)) {
+                        try {
+                           await apiFetch(`/transportadoras/${id}`, { method: 'DELETE' });
+                           showMessage(appMessage, 'Transportadora excluída com sucesso!', 'sucesso');
+                           fetchTransportadoras();
+                        } catch(error) { 
+                            console.error('Erro ao excluir transportadora:', error);
+                            showMessage(appMessage, `Erro: ${error.message}`, 'erro'); 
+                        }
+                    }
+                }
+            };
+
+            function showMessage(element, text, type = 'sucesso') {
+                element.textContent = text;
+                element.className = `p-4 text-center rounded-md mx-4 my-2 ${type === 'sucesso' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`;
+                element.classList.remove('hidden');
+                setTimeout(() => {
+                    element.classList.add('hidden');
+                    element.textContent = '';
+                    element.className = 'p-4 text-center hidden';
+                }, 5000);
+            }
+
+            // INICIALIZAÇÃO DA APLICAÇÃO
+            const initializeApp = () => {
+                // Esconde todas as páginas primeiro
+                pages.forEach(p => {
+                    p.classList.remove('active');
+                    p.style.display = 'none';
+                });
+                
+                // Determina qual página mostrar
+                if (window.authToken) {
+                    navigateTo('dashboard');
+                } else {
+                    navigateTo('auth');
+                    renderAuthForm('login');
+                }
+            };
+            
+            // Inicializa a aplicação
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
