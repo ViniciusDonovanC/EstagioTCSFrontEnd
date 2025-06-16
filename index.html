@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -39,18 +40,31 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
+
+        /* Estilo para a visualização do gráfico - Aumentar altura */
+        #vendas-chart-view, #compras-chart-view {
+            min-height: 400px; /* Define uma altura mínima para o contêiner do gráfico */
+            display: flex; /* Ajuda a centralizar o canvas dentro do contêiner */
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 20px; /* Um pouco de padding para não grudar no rodapé */
+        }
+        #vendas-chart, #compras-chart {
+            max-height: 100%; /* Garante que o canvas não transborde o contêiner */
+            width: 100%; /* Ocupa a largura total disponível */
+        }
+
     </style>
 </head>
 <body class="text-gray-800">
 
-
-    <div id="auth-page" class="page flex items-center justify-center min-h-screen bg-gray-100">
+    <div id="auth-page" class="page flex items-center justify-center min-h-screen bg-gray-100" style="display:none;">
         <div class="w-full max-w-md">
             <div class="bg-white shadow-2xl rounded-xl p-8">
                 <div class="text-center mb-8">
-                     <i class="fa-solid fa-pills text-5xl text-green-500"></i>
-                     <h1 class="text-3xl font-bold text-gray-900 mt-4">Sistema da Farmácia</h1>
-                     <p class="text-gray-500">Acesse para gerenciar o sistema.</p>
+                    <i class="fa-solid fa-pills text-5xl text-green-500"></i>
+                    <h1 class="text-3xl font-bold text-gray-900 mt-4">Sistema da Farmácia</h1>
+                    <p class="text-gray-500">Acesse para gerenciar o sistema.</p>
                 </div>
                 <div class="flex border-b mb-6">
                     <button data-tab="login" class="tab-btn flex-1 py-2 font-semibold text-green-600 border-b-2 border-green-600">Login</button>
@@ -80,14 +94,14 @@
                     <p class="text-gray-600 mt-2">Gerenciar parceiros de logística.</p>
                 </div>
                 <div data-route="vendas" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
-                     <div class="flex items-center">
+                    <div class="flex items-center">
                         <div class="p-3 bg-green-100 rounded-full"><i class="fa-solid fa-cash-register text-2xl text-green-600"></i></div>
                         <h2 class="text-xl font-semibold ml-4">Vendas</h2>
                     </div>
                     <p class="text-gray-600 mt-2">Registrar e consultar vendas.</p>
                 </div>
                 <div data-route="compras" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
-                     <div class="flex items-center">
+                    <div class="flex items-center">
                         <div class="p-3 bg-yellow-100 rounded-full"><i class="fa-solid fa-box-archive text-2xl text-yellow-600"></i></div>
                         <h2 class="text-xl font-semibold ml-4">Compras</h2>
                     </div>
@@ -119,7 +133,7 @@
             </div>
         </nav>
         <div class="container mx-auto p-4 md:p-8">
-             <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-1 space-y-6">
                     <div class="bg-white p-6 rounded-lg shadow-md">
                         <h2 class="text-xl font-semibold mb-4 border-b pb-3"><i class="fa-solid fa-plus-circle text-green-500"></i> Nova Transportadora</h2>
@@ -128,7 +142,9 @@
                 </div>
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-lg shadow-md">
-                        <div class="p-6 border-b"><h2 class="text-xl font-semibold"><i class="fa-solid fa-list-ul text-purple-500"></i> Cadastradas</h2></div>
+                        <div class="p-6 border-b flex justify-between items-center">
+                            <h2 class="text-xl font-semibold"><i class="fa-solid fa-list-ul text-purple-500"></i> Cadastradas</h2>
+                        </div>
                         <div id="app-message" class="p-4 text-center hidden"></div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -149,6 +165,100 @@
         </div>
     </div>
 
+    <div id="vendas-page" class="page">
+        <nav class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="text-xl font-bold text-gray-800"><i class="fa-solid fa-cash-register text-green-600"></i> Gerenciar Vendas</div>
+                <button data-route="dashboard" class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition"><i class="fa-solid fa-arrow-left"></i> Voltar ao Início</button>
+            </div>
+        </nav>
+        <div class="container mx-auto p-4 md:p-8">
+            <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-4 border-b pb-3"><i class="fa-solid fa-plus-circle text-green-500"></i> Nova Venda</h2>
+                        <form id="form-adicionar-venda"></form>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow-md">
+                        <div class="p-6 border-b flex justify-between items-center">
+                            <h2 class="text-xl font-semibold"><i class="fa-solid fa-list-ul text-purple-500"></i> Vendas Registradas</h2>
+                            <button id="toggle-view-btn-vendas" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition">
+                                <i class="fa-solid fa-chart-bar"></i> Visualizar Gráfico
+                            </button>
+                        </div>
+                        <div id="vendas-message" class="p-4 text-center hidden"></div>
+                        <div id="vendas-list-view" class="overflow-x-auto p-4">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-vendas" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                        <div id="vendas-chart-view" class="p-4 hidden">
+                            <canvas id="vendas-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="compras-page" class="page">
+        <nav class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="text-xl font-bold text-gray-800"><i class="fa-solid fa-box-archive text-yellow-600"></i> Gerenciar Compras</div>
+                <button data-route="dashboard" class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition"><i class="fa-solid fa-arrow-left"></i> Voltar ao Início</button>
+            </div>
+        </nav>
+        <div class="container mx-auto p-4 md:p-8">
+            <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-4 border-b pb-3"><i class="fa-solid fa-plus-circle text-yellow-500"></i> Nova Compra</h2>
+                        <form id="form-adicionar-compra"></form>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow-md">
+                        <div class="p-6 border-b flex justify-between items-center">
+                            <h2 class="text-xl font-semibold"><i class="fa-solid fa-list-ul text-purple-500"></i> Compras Registradas</h2>
+                            <button id="toggle-view-btn-compras" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition">
+                                <i class="fa-solid fa-chart-bar"></i> Visualizar Gráfico
+                            </button>
+                        </div>
+                        <div id="compras-message" class="p-4 text-center hidden"></div>
+                        <div id="compras-list-view" class="overflow-x-auto p-4">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fornecedor</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gasto Total</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-compras" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                        <div id="compras-chart-view" class="p-4 hidden">
+                            <canvas id="compras-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -157,7 +267,23 @@
             const authFormsContainer = document.getElementById('auth-forms-container');
             const authMessage = document.getElementById('auth-message');
             const appMessage = document.getElementById('app-message');
+            
+            // Elementos da página de Vendas
+            const vendasMessage = document.getElementById('vendas-message');
+            const vendasListView = document.getElementById('vendas-list-view');
+            const vendasChartView = document.getElementById('vendas-chart-view');
+            const toggleViewBtnVendas = document.getElementById('toggle-view-btn-vendas');
+            let vendasChartInstance = null;
+            let currentVendasView = 'list';
 
+            // Elementos da página de Compras (NOVOS)
+            const comprasMessage = document.getElementById('compras-message');
+            const comprasListView = document.getElementById('compras-list-view');
+            const comprasChartView = document.getElementById('compras-chart-view');
+            const toggleViewBtnCompras = document.getElementById('toggle-view-btn-compras');
+            let comprasChartInstance = null;
+            let currentComprasView = 'list';
+            
             const templates = {
                 loginForm: `
                     <form id="login-form">
@@ -204,6 +330,39 @@
                     </div>
                     <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition disabled:opacity-50">
                         <i class="fa-solid fa-floppy-disk"></i> Salvar
+                    </button>`,
+                vendaForm: `
+                    <div class="mb-4">
+                        <label for="venda-cliente" class="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+                        <input type="text" id="venda-cliente" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-green-500 focus:outline-none transition" placeholder="Nome do cliente">
+                    </div>
+                    <div class="mb-4">
+                        <label for="venda-data" class="block text-sm font-medium text-gray-700 mb-1">Data da Venda</label>
+                        <input type="date" id="venda-data" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-green-500 focus:outline-none transition">
+                    </div>
+                    <div class="mb-4">
+                        <label for="venda-total" class="block text-sm font-medium text-gray-700 mb-1">Valor Total (R$)</label>
+                        <input type="number" step="0.01" id="venda-total" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-green-500 focus:outline-none transition" placeholder="Ex: 123.45">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 transition disabled:opacity-50">
+                        <i class="fa-solid fa-floppy-disk"></i> Registrar Venda
+                    </button>`,
+                // Novo formulário para Compras
+                compraForm: `
+                    <div class="mb-4">
+                        <label for="compra-fornecedor" class="block text-sm font-medium text-gray-700 mb-1">Fornecedor</label>
+                        <input type="text" id="compra-fornecedor" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-yellow-500 focus:outline-none transition" placeholder="Nome do fornecedor">
+                    </div>
+                    <div class="mb-4">
+                        <label for="compra-data" class="block text-sm font-medium text-gray-700 mb-1">Data da Compra</label>
+                        <input type="date" id="compra-data" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-yellow-500 focus:outline-none transition">
+                    </div>
+                    <div class="mb-4">
+                        <label for="compra-gasto-total" class="block text-sm font-medium text-gray-700 mb-1">Gasto Total (R$)</label>
+                        <input type="number" step="0.01" id="compra-gasto-total" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-yellow-500 focus:outline-none transition" placeholder="Ex: 500.00">
+                    </div>
+                    <button type="submit" class="w-full bg-yellow-600 text-white font-bold py-2 px-4 rounded-md hover:bg-yellow-700 transition disabled:opacity-50">
+                        <i class="fa-solid fa-floppy-disk"></i> Registrar Compra
                     </button>`
             };
             
@@ -220,6 +379,10 @@
                     
                     if (pageId === 'transportadoras') {
                         renderTransportadoraPage();
+                    } else if (pageId === 'vendas') {
+                        renderVendasPage();
+                    } else if (pageId === 'compras') { // Nova chamada para renderizar a página de compras
+                        renderComprasPage();
                     }
                 } else {
                     console.error(`Página ${pageId} não encontrada`);
@@ -233,7 +396,7 @@
                     const route = routeTarget.dataset.route;
                     const targetPage = document.getElementById(`${route}-page`);
                     if (targetPage) {
-                         navigateTo(route);
+                           navigateTo(route);
                     } else {
                         alert(`Funcionalidade "${route}" ainda não implementada.`);
                     }
@@ -259,110 +422,148 @@
             
             authFormsContainer.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const formId = e.target.id;
-                const submitButton = e.target.querySelector('button[type="submit"]');
-                const originalButtonText = submitButton.innerHTML;
-                
-                if (formId === 'register-form') {
-                    const senha = document.getElementById('register-senha').value;
-                    if (senha.length < 6) {
-                        showMessage(authMessage, 'A senha deve ter pelo menos 6 caracteres.', 'erro');
-                        return;
-                    }
-                }
-                
-                submitButton.disabled = true;
-                submitButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processando...`;
-
-                try {
-                    if (formId === 'login-form') {
-                        const login = document.getElementById('login-email').value.trim();
-                        const senha = document.getElementById('login-senha').value;
-                        
-                        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                            method: 'POST', 
-                            headers: {'Content-Type': 'application/json'}, 
-                            body: JSON.stringify({login, senha})
-                        });
-                        
-                        if (!response.ok) {
-                            const errorText = await response.text();
-                            throw new Error(errorText || 'Credenciais inválidas.');
-                        }
-                        
-                        const data = await response.json();
-                        if (data.token) {
-                            window.authToken = data.token;
-                            navigateTo('dashboard');
-                        } else {
-                            throw new Error('Token não recebido.');
-                        }
-                    } else if (formId === 'register-form') {
-                        const login = document.getElementById('register-email').value.trim();
-                        const senha = document.getElementById('register-senha').value;
-                        const acesso = document.getElementById('register-acesso').value;
-                        
-                        const response = await fetch(`${API_BASE_URL}/auth/register`, {
-                            method: 'POST', 
-                            headers: {'Content-Type': 'application/json'}, 
-                            body: JSON.stringify({login, senha, acesso})
-                        });
-                        
-                        if (!response.ok) {
-                            const errorText = await response.text();
-                            throw new Error(errorText || 'Erro no cadastro. Verifique os dados.');
-                        }
-                        
-                        showMessage(authMessage, 'Cadastro realizado com sucesso! Faça o login.', 'sucesso');
-                        renderAuthForm('login');
-                    }
-                } catch (error) {
-                    console.error('Erro na autenticação:', error);
-                    showMessage(authMessage, error.message, 'erro');
-                } finally {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = originalButtonText;
-                }
+                console.warn('Authentication forms are currently bypassed.');
+                navigateTo('dashboard'); // Always navigate to dashboard for testing
             });
             
             const logout = () => {
-                window.authToken = null;
-                navigateTo('auth');
-                renderAuthForm('login');
+                navigateTo('dashboard');
             };
             document.getElementById('logout-btn').addEventListener('click', logout);
             
             const apiFetch = async (endpoint, options = {}) => {
-                const token = window.authToken;
-                if (!token) { 
-                    logout(); 
-                    throw new Error('Sessão expirada. Faça login novamente.'); 
+                // Simula respostas da API com dados fictícios
+                if (endpoint.includes('/transportadoras')) {
+                    return simulateTransportadorasAPI(endpoint, options);
+                } else if (endpoint.includes('/vendas')) {
+                    return simulateVendasAPI(endpoint, options);
+                } else if (endpoint.includes('/compras')) { // Nova simulação para Compras
+                    return simulateComprasAPI(endpoint, options);
                 }
+
+                // Fallback para uma API real se necessário
+                // const config = { 
+                //     ...options, 
+                //     headers: { 
+                //         'Content-Type': 'application/json', 
+                //         ...options.headers 
+                //     } 
+                // };
                 
-                const config = { 
-                    ...options, 
-                    headers: { 
-                        'Authorization': `Bearer ${token}`, 
-                        'Content-Type': 'application/json', 
-                        ...options.headers 
-                    } 
-                };
+                // const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
                 
-                const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                // if (!response.ok) { 
+                //     const errorText = await response.text();
+                //     throw new Error(errorText || `Erro ${response.status}`); 
+                // }
                 
-                if (response.status === 401 || response.status === 403) { 
-                    logout(); 
-                    throw new Error('Sessão expirada ou acesso negado.'); 
+                // return response.status === 204 ? null : response.json();
+            };
+
+            // --- Dados Fictícios ---
+            let mockTransportadoras = [
+                { id: 1, nome: 'Transporte Rápido Ltda.', estadosCobertura: ['SP', 'MG', 'RJ'] },
+                { id: 2, nome: 'Entrega Veloz S/A', estadosCobertura: ['PR', 'SC', 'RS', 'SP'] },
+                { id: 3, nome: 'Logística Total', estadosCobertura: ['BA', 'PE', 'CE', 'MA'] },
+                { id: 4, nome: 'Carga Expressa', estadosCobertura: ['GO', 'DF', 'MT'] }
+            ];
+            let nextTransportadoraId = 5;
+
+            let mockVendas = [
+                { id: 101, cliente: 'Ana Paula Silva', dataVenda: '2025-06-08', valorTotal: 125.75 },
+                { id: 102, cliente: 'João Carlos Souza', dataVenda: '2025-06-09', valorTotal: 89.90 },
+                { id: 103, cliente: 'Maria Fernanda Lima', dataVenda: '2025-06-10', valorTotal: 230.00 },
+                { id: 104, cliente: 'Pedro Henrique Costa', dataVenda: '2025-06-11', valorTotal: 55.50 },
+                { id: 105, cliente: 'Carla Dias', dataVenda: '2025-06-12', valorTotal: 180.20 },
+                { id: 106, cliente: 'Roberto Almeida', dataVenda: '2025-06-13', valorTotal: 95.00 },
+                { id: 107, cliente: 'Mariana Santos', dataVenda: '2025-06-14', valorTotal: 310.40 },
+                { id: 108, cliente: 'Felipe Martins', dataVenda: '2025-06-15', valorTotal: 72.10 },
+                { id: 109, cliente: 'Larissa Oliveira', dataVenda: '2025-06-15', valorTotal: 205.00 },
+                { id: 110, cliente: 'Gustavo Pereira', dataVenda: '2025-06-16', valorTotal: 150.30 }
+            ];
+            let nextVendaId = 111;
+
+            // Dados Fictícios de Compras (NOVOS)
+            let mockCompras = [
+                { id: 1, fornecedor: 'Distribuidora Farmacêutica Alpha', dataCompra: '2025-06-05', gastoTotal: 1500.00 },
+                { id: 2, fornecedor: 'Laboratório Beta', dataCompra: '2025-06-07', gastoTotal: 850.50 },
+                { id: 3, fornecedor: 'Atacadista Gama', dataCompra: '2025-06-10', gastoTotal: 3200.75 },
+                { id: 4, fornecedor: 'Distribuidora Farmacêutica Alpha', dataCompra: '2025-06-12', gastoTotal: 980.20 },
+                { id: 5, fornecedor: 'Laboratório Beta', dataCompra: '2025-06-14', gastoTotal: 600.00 },
+                { id: 6, fornecedor: 'Atacadista Gama', dataCompra: '2025-06-15', gastoTotal: 2500.00 }
+            ];
+            let nextCompraId = 7;
+
+            // --- Simulação da API de Transportadoras ---
+            const simulateTransportadorasAPI = async (endpoint, options) => {
+                await new Promise(resolve => setTimeout(resolve, 500)); // Simula delay da rede
+
+                if (endpoint === '/transportadoras' && options.method === 'GET') {
+                    return [...mockTransportadoras];
+                } else if (endpoint === '/transportadoras/registro' && options.method === 'POST') {
+                    const newTransportadora = JSON.parse(options.body);
+                    newTransportadora.id = nextTransportadoraId++;
+                    mockTransportadoras.push(newTransportadora);
+                    return newTransportadora;
+                } else if (endpoint.startsWith('/transportadoras/') && options.method === 'DELETE') {
+                    const idToDelete = parseInt(endpoint.split('/').pop());
+                    const initialLength = mockTransportadoras.length;
+                    mockTransportadoras = mockTransportadoras.filter(t => t.id !== idToDelete);
+                    if (mockTransportadoras.length === initialLength) {
+                        throw new Error('Transportadora não encontrada');
+                    }
+                    return null; // No Content (204)
                 }
-                
-                if (!response.ok) { 
-                    const errorText = await response.text();
-                    throw new Error(errorText || `Erro ${response.status}`); 
+                throw new Error('Endpoint ou método não suportado para simulação de transportadoras.');
+            };
+
+            // --- Simulação da API de Vendas ---
+            const simulateVendasAPI = async (endpoint, options) => {
+                await new Promise(resolve => setTimeout(resolve, 500)); // Simula delay da rede
+
+                if (endpoint === '/vendas' && options.method === 'GET') {
+                    return [...mockVendas];
+                } else if (endpoint === '/vendas/registro' && options.method === 'POST') {
+                    const newVenda = JSON.parse(options.body);
+                    newVenda.id = nextVendaId++;
+                    mockVendas.push(newVenda);
+                    return newVenda;
+                } else if (endpoint.startsWith('/vendas/') && options.method === 'DELETE') {
+                    const idToDelete = parseInt(endpoint.split('/').pop());
+                    const initialLength = mockVendas.length;
+                    mockVendas = mockVendas.filter(v => v.id !== idToDelete);
+                    if (mockVendas.length === initialLength) {
+                        throw new Error('Venda não encontrada');
+                    }
+                    return null; // No Content (204)
                 }
-                
-                return response.status === 204 ? null : response.json();
+                throw new Error('Endpoint ou método não suportado para simulação de vendas.');
+            };
+
+            // --- Simulação da API de Compras (NOVA) ---
+            const simulateComprasAPI = async (endpoint, options) => {
+                await new Promise(resolve => setTimeout(resolve, 500)); // Simula delay da rede
+
+                if (endpoint === '/compras' && options.method === 'GET') {
+                    return [...mockCompras];
+                } else if (endpoint === '/compras/registro' && options.method === 'POST') {
+                    const newCompra = JSON.parse(options.body);
+                    newCompra.id = nextCompraId++;
+                    mockCompras.push(newCompra);
+                    return newCompra;
+                } else if (endpoint.startsWith('/compras/') && options.method === 'DELETE') {
+                    const idToDelete = parseInt(endpoint.split('/').pop());
+                    const initialLength = mockCompras.length;
+                    mockCompras = mockCompras.filter(c => c.id !== idToDelete);
+                    if (mockCompras.length === initialLength) {
+                        throw new Error('Compra não encontrada');
+                    }
+                    return null; // No Content (204)
+                }
+                throw new Error('Endpoint ou método não suportado para simulação de compras.');
             };
             
+            // --- Transportadoras Functions ---
             const renderTransportadoraPage = () => {
                 const formContainer = document.getElementById('form-adicionar-transportadora');
                 formContainer.innerHTML = templates.transportadoraForm;
@@ -389,7 +590,7 @@
 
             const fetchTransportadoras = async () => {
                 try {
-                    const data = await apiFetch('/transportadoras');
+                    const data = await apiFetch('/transportadoras', { method: 'GET' });
                     renderTabelaTransportadoras(data);
                 } catch (error) {
                     console.error('Erro ao buscar transportadoras:', error);
@@ -402,8 +603,8 @@
                 tabela.innerHTML = '';
                 
                 if (!data || data.length === 0) {
-                     tabela.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Nenhuma transportadora cadastrada.</td></tr>`;
-                     return;
+                   tabela.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Nenhuma transportadora cadastrada.</td></tr>`;
+                   return;
                 }
                 
                 data.forEach(t => {
@@ -457,7 +658,7 @@
                 try {
                     await apiFetch('/transportadoras/registro', { 
                         method: 'POST', 
-                        body: JSON.stringify({ nome, estadosAtendidos: estados }) 
+                        body: JSON.stringify({ nome, estadosCobertura: estados }) 
                     });
                     showMessage(appMessage, 'Transportadora salva com sucesso!', 'sucesso');
                     e.target.reset();
@@ -488,9 +689,398 @@
                 }
             };
 
+            // --- Vendas Functions ---
+            const renderVendasPage = () => {
+                const formContainer = document.getElementById('form-adicionar-venda');
+                formContainer.innerHTML = templates.vendaForm;
+                
+                formContainer.addEventListener('submit', handleAddVenda);
+                document.getElementById('tabela-vendas').addEventListener('click', handleDeleteVenda);
+                toggleViewBtnVendas.addEventListener('click', toggleVendasView);
+
+                currentVendasView = 'list'; 
+                vendasListView.classList.remove('hidden');
+                vendasChartView.classList.add('hidden');
+                toggleViewBtnVendas.innerHTML = '<i class="fa-solid fa-chart-bar"></i> Visualizar Gráfico';
+                
+                fetchVendas();
+            };
+
+            const fetchVendas = async () => {
+                try {
+                    const data = await apiFetch('/vendas', { method: 'GET' });
+                    renderTabelaVendas(data);
+                    if (currentVendasView === 'chart') {
+                        renderVendasChart(data);
+                    }
+                } catch (error) {
+                    console.error('Erro ao buscar vendas:', error);
+                    showMessage(vendasMessage, error.message, 'erro');
+                }
+            };
+            
+            const renderTabelaVendas = (data) => {
+                const tabela = document.getElementById('tabela-vendas');
+                tabela.innerHTML = '';
+                
+                if (!data || data.length === 0) {
+                   tabela.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Nenhuma venda registrada.</td></tr>`;
+                   return;
+                }
+                
+                data.forEach(venda => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4 text-sm">${venda.id}</td>
+                        <td class="px-6 py-4 text-sm font-medium">${venda.cliente}</td>
+                        <td class="px-6 py-4 text-sm">${new Date(venda.dataVenda).toLocaleDateString('pt-BR')}</td>
+                        <td class="px-6 py-4 text-sm">R$ ${venda.valorTotal.toFixed(2).replace('.', ',')}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button class="btn-excluir text-red-600 hover:text-red-900 hover:bg-red-50 p-2 rounded transition" data-id="${venda.id}" title="Excluir venda">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tabela.appendChild(row);
+                });
+            };
+
+            const handleAddVenda = async (e) => {
+                e.preventDefault();
+                
+                const cliente = document.getElementById('venda-cliente').value.trim();
+                const dataVenda = document.getElementById('venda-data').value;
+                const valorTotal = parseFloat(document.getElementById('venda-total').value);
+                
+                if (!cliente || !dataVenda || isNaN(valorTotal)) {
+                    showMessage(vendasMessage, 'Preencha todos os campos corretamente.', 'erro');
+                    return;
+                }
+                
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                const originalText = submitButton.innerHTML;
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando...';
+                
+                try {
+                    await apiFetch('/vendas/registro', { 
+                        method: 'POST', 
+                        body: JSON.stringify({ cliente, dataVenda, valorTotal }) 
+                    });
+                    showMessage(vendasMessage, 'Venda registrada com sucesso!', 'sucesso');
+                    e.target.reset();
+                    fetchVendas();
+                } catch(error) { 
+                    console.error('Erro ao registrar venda:', error);
+                    showMessage(vendasMessage, `Erro: ${error.message}`, 'erro'); 
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }
+            };
+
+            const handleDeleteVenda = async (e) => {
+                const btn = e.target.closest('.btn-excluir');
+                if (btn) {
+                    const id = btn.dataset.id;
+                    if (confirm(`Tem certeza que deseja excluir a venda ID ${id}?`)) {
+                        try {
+                           await apiFetch(`/vendas/${id}`, { method: 'DELETE' });
+                           showMessage(vendasMessage, 'Venda excluída com sucesso!', 'sucesso');
+                           fetchVendas();
+                        } catch(error) { 
+                            console.error('Erro ao excluir venda:', error);
+                            showMessage(vendasMessage, `Erro: ${error.message}`, 'erro'); 
+                        }
+                    }
+                }
+            };
+
+            const renderVendasChart = (data) => {
+                const ctx = document.getElementById('vendas-chart').getContext('2d');
+
+                if (vendasChartInstance) {
+                    vendasChartInstance.destroy();
+                }
+
+                const salesByDate = data.reduce((acc, sale) => {
+                    const date = new Date(sale.dataVenda).toLocaleDateString('pt-BR');
+                    acc[date] = (acc[date] || 0) + sale.valorTotal;
+                    return acc;
+                }, {});
+
+                const sortedDates = Object.keys(salesByDate).sort((a, b) => {
+                    const dateA = a.split('/').reverse().join('-');
+                    const dateB = b.split('/').reverse().join('-');
+                    return new Date(dateA) - new Date(dateB);
+                });
+
+                const labels = sortedDates;
+                const values = sortedDates.map(date => salesByDate[date]);
+
+                vendasChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Valor Total de Vendas (R$)',
+                            data: values,
+                            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Valor (R$)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Data da Venda'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Vendas por Data'
+                            }
+                        }
+                    }
+                });
+            };
+
+            const toggleVendasView = () => {
+                if (currentVendasView === 'list') {
+                    vendasListView.classList.add('hidden');
+                    vendasChartView.classList.remove('hidden');
+                    toggleViewBtnVendas.innerHTML = '<i class="fa-solid fa-list"></i> Visualizar Lista';
+                    currentVendasView = 'chart';
+                    fetchVendas();
+                } else {
+                    vendasListView.classList.remove('hidden');
+                    vendasChartView.classList.add('hidden');
+                    toggleViewBtnVendas.innerHTML = '<i class="fa-solid fa-chart-bar"></i> Visualizar Gráfico';
+                    currentVendasView = 'list';
+                    if (vendasChartInstance) {
+                        vendasChartInstance.destroy();
+                    }
+                }
+            };
+
+            // --- Compras Functions (NOVAS) ---
+            const renderComprasPage = () => {
+                const formContainer = document.getElementById('form-adicionar-compra');
+                formContainer.innerHTML = templates.compraForm;
+                
+                formContainer.addEventListener('submit', handleAddCompra);
+                document.getElementById('tabela-compras').addEventListener('click', handleDeleteCompra);
+                toggleViewBtnCompras.addEventListener('click', toggleComprasView);
+
+                currentComprasView = 'list'; 
+                comprasListView.classList.remove('hidden');
+                comprasChartView.classList.add('hidden');
+                toggleViewBtnCompras.innerHTML = '<i class="fa-solid fa-chart-bar"></i> Visualizar Gráfico';
+                
+                fetchCompras();
+            };
+
+            const fetchCompras = async () => {
+                try {
+                    const data = await apiFetch('/compras', { method: 'GET' });
+                    renderTabelaCompras(data);
+                    if (currentComprasView === 'chart') {
+                        renderComprasChart(data);
+                    }
+                } catch (error) {
+                    console.error('Erro ao buscar compras:', error);
+                    showMessage(comprasMessage, error.message, 'erro');
+                }
+            };
+            
+            const renderTabelaCompras = (data) => {
+                const tabela = document.getElementById('tabela-compras');
+                tabela.innerHTML = '';
+                
+                if (!data || data.length === 0) {
+                   tabela.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Nenhuma compra registrada.</td></tr>`;
+                   return;
+                }
+                
+                data.forEach(compra => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4 text-sm">${compra.id}</td>
+                        <td class="px-6 py-4 text-sm font-medium">${compra.fornecedor}</td>
+                        <td class="px-6 py-4 text-sm">${new Date(compra.dataCompra).toLocaleDateString('pt-BR')}</td>
+                        <td class="px-6 py-4 text-sm">R$ ${compra.gastoTotal.toFixed(2).replace('.', ',')}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button class="btn-excluir text-red-600 hover:text-red-900 hover:bg-red-50 p-2 rounded transition" data-id="${compra.id}" title="Excluir compra">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tabela.appendChild(row);
+                });
+            };
+
+            const handleAddCompra = async (e) => {
+                e.preventDefault();
+                
+                const fornecedor = document.getElementById('compra-fornecedor').value.trim();
+                const dataCompra = document.getElementById('compra-data').value;
+                const gastoTotal = parseFloat(document.getElementById('compra-gasto-total').value);
+                
+                if (!fornecedor || !dataCompra || isNaN(gastoTotal)) {
+                    showMessage(comprasMessage, 'Preencha todos os campos corretamente.', 'erro');
+                    return;
+                }
+                
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                const originalText = submitButton.innerHTML;
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando...';
+                
+                try {
+                    await apiFetch('/compras/registro', { 
+                        method: 'POST', 
+                        body: JSON.stringify({ fornecedor, dataCompra, gastoTotal }) 
+                    });
+                    showMessage(comprasMessage, 'Compra registrada com sucesso!', 'sucesso');
+                    e.target.reset();
+                    fetchCompras();
+                } catch(error) { 
+                    console.error('Erro ao registrar compra:', error);
+                    showMessage(comprasMessage, `Erro: ${error.message}`, 'erro'); 
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }
+            };
+
+            const handleDeleteCompra = async (e) => {
+                const btn = e.target.closest('.btn-excluir');
+                if (btn) {
+                    const id = btn.dataset.id;
+                    if (confirm(`Tem certeza que deseja excluir a compra ID ${id}?`)) {
+                        try {
+                           await apiFetch(`/compras/${id}`, { method: 'DELETE' });
+                           showMessage(comprasMessage, 'Compra excluída com sucesso!', 'sucesso');
+                           fetchCompras();
+                        } catch(error) { 
+                            console.error('Erro ao excluir compra:', error);
+                            showMessage(comprasMessage, `Erro: ${error.message}`, 'erro'); 
+                        }
+                    }
+                }
+            };
+
+            const renderComprasChart = (data) => {
+                const ctx = document.getElementById('compras-chart').getContext('2d');
+
+                if (comprasChartInstance) {
+                    comprasChartInstance.destroy();
+                }
+
+                const purchasesByDate = data.reduce((acc, purchase) => {
+                    const date = new Date(purchase.dataCompra).toLocaleDateString('pt-BR');
+                    acc[date] = (acc[date] || 0) + purchase.gastoTotal;
+                    return acc;
+                }, {});
+
+                const sortedDates = Object.keys(purchasesByDate).sort((a, b) => {
+                    const dateA = a.split('/').reverse().join('-');
+                    const dateB = b.split('/').reverse().join('-');
+                    return new Date(dateA) - new Date(dateB);
+                });
+
+                const labels = sortedDates;
+                const values = sortedDates.map(date => purchasesByDate[date]);
+
+                comprasChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Gasto Total de Compras (R$)',
+                            data: values,
+                            backgroundColor: 'rgba(255, 206, 86, 0.7)', // Amarelo/Laranja para compras
+                            borderColor: 'rgba(255, 206, 86, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Valor (R$)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Data da Compra'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Gastos por Data'
+                            }
+                        }
+                    }
+                });
+            };
+
+            const toggleComprasView = () => {
+                if (currentComprasView === 'list') {
+                    comprasListView.classList.add('hidden');
+                    comprasChartView.classList.remove('hidden');
+                    toggleViewBtnCompras.innerHTML = '<i class="fa-solid fa-list"></i> Visualizar Lista';
+                    currentComprasView = 'chart';
+                    fetchCompras();
+                } else {
+                    comprasListView.classList.remove('hidden');
+                    comprasChartView.classList.add('hidden');
+                    toggleViewBtnCompras.innerHTML = '<i class="fa-solid fa-chart-bar"></i> Visualizar Gráfico';
+                    currentComprasView = 'list';
+                    if (comprasChartInstance) {
+                        comprasChartInstance.destroy();
+                    }
+                }
+            };
+
+
             function showMessage(element, text, type = 'sucesso') {
                 element.textContent = text;
-                element.className = `p-4 text-center rounded-md mx-4 my-2 ${type === 'sucesso' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`;
+                element.className = `p-4 text-center rounded-md mx-4 my-2 ${type === 'sucesso' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-200'}`;
                 element.classList.remove('hidden');
                 setTimeout(() => {
                     element.classList.add('hidden');
@@ -505,15 +1095,9 @@
                     p.style.display = 'none';
                 });
                 
-                if (window.authToken) {
-                    navigateTo('dashboard');
-                } else {
-                    navigateTo('auth');
-                    renderAuthForm('login');
-                }
+                navigateTo('dashboard');
             };
             
-
             initializeApp();
         });
     </script>
