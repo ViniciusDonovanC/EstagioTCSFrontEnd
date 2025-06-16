@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
         .page-content { animation: fadeIn 0.4s ease-in-out; }
     </style>
 </head>
+
 <body class="text-gray-800">
 
     <div class="page-content">
@@ -64,9 +66,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const appMessage = document.getElementById('app-message');
-            
-            // --- Dados e Simulação de API ---
-            // Os valores agora são numéricos (ou 0 se não aplicável)
             let mockSetores = [
                 { id: 1, nome: 'Administrativo', valeAlimentacao: 300.00, valeRefeicao: 0.00, valeTransporte: 150.00, planoSaude: 200.00, planoOdontologico: 0.00 },
                 { id: 2, nome: 'Farmácia', valeAlimentacao: 350.00, valeRefeicao: 250.00, valeTransporte: 200.00, planoSaude: 250.00, planoOdontologico: 80.00 },
@@ -95,9 +94,7 @@
                 throw new Error('Endpoint simulado não encontrado.');
             };
 
-            // --- Funções da Página ---
             const formContainer = document.getElementById('form-adicionar-setor');
-            // O formulário agora usa campos de input tipo 'number' para os valores
             formContainer.innerHTML = `
                 <div class="mb-4">
                     <label for="setor-nome" class="block text-sm font-medium text-gray-700 mb-1">Nome do Setor</label>
@@ -129,9 +126,7 @@
 
             const renderTabelaSetores = (data) => {
                 const tabela = document.getElementById('tabela-setores');
-                // Formata os valores monetários para exibição
                 const formatCurrency = (value) => {
-                    // Garante que o valor é um número e formata para moeda brasileira
                     return parseFloat(value).toLocaleString('pt-BR', {
                         style: 'currency',
                         currency: 'BRL',
@@ -178,7 +173,6 @@
             formContainer.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const nome = document.getElementById('setor-nome').value.trim();
-                // Obtém os valores dos campos numéricos e os converte para float
                 const valeAlimentacao = parseFloat(document.getElementById('vale-alimentacao').value) || 0;
                 const valeRefeicao = parseFloat(document.getElementById('vale-refeicao').value) || 0;
                 const valeTransporte = parseFloat(document.getElementById('vale-transporte').value) || 0;
@@ -205,15 +199,14 @@
                         }) 
                     });
                     showMessage(appMessage, 'Setor salvo com sucesso!', 'sucesso');
-                    // Reinicia o formulário, definindo os campos numéricos para 0.00
                     e.target.reset();
                     document.getElementById('vale-alimentacao').value = '0.00';
                     document.getElementById('vale-refeicao').value = '0.00';
                     document.getElementById('vale-transporte').value = '0.00';
                     document.getElementById('plano-saude').value = '0.00';
                     document.getElementById('plano-odontologico').value = '0.00';
-                    
-                    fetchSetores(); // Recarrega a tabela com os novos dados
+                
+                    fetchSetores();
                 } catch(error) { 
                     showMessage(appMessage, `Erro: ${error.message}`, 'erro'); 
                 } finally {
@@ -223,8 +216,7 @@
 
             document.getElementById('tabela-setores').addEventListener('click', async (e) => {
                 const btn = e.target.closest('.btn-excluir');
-                if (btn) { // Não usamos mais o confirm() devido a restrições em iframes
-                    // Exibir uma modal ou confirmação visual no futuro
+                if (btn) {
                     try {
                         await apiFetch(`/setores/${btn.dataset.id}`, { method: 'DELETE' });
                         showMessage(appMessage, 'Excluído com sucesso!', 'sucesso');
