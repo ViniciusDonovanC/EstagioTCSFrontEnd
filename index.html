@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestão de Farmácia</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome para ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         body {
@@ -17,7 +14,7 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
-        /* Por padrão, todas as páginas estão escondidas */
+
         .page { 
             display: none; 
             position: absolute;
@@ -26,7 +23,7 @@
             width: 100%;
             min-height: 100vh;
         }
-        /* A página com a classe 'active' é a única visível */
+
         .page.active { 
             display: block; 
             position: relative;
@@ -46,7 +43,7 @@
 </head>
 <body class="text-gray-800">
 
-    <!-- Tela de Autenticação (Login/Cadastro) -->
+
     <div id="auth-page" class="page flex items-center justify-center min-h-screen bg-gray-100">
         <div class="w-full max-w-md">
             <div class="bg-white shadow-2xl rounded-xl p-8">
@@ -59,14 +56,12 @@
                     <button data-tab="login" class="tab-btn flex-1 py-2 font-semibold text-green-600 border-b-2 border-green-600">Login</button>
                     <button data-tab="register" class="tab-btn flex-1 py-2 font-semibold text-gray-500">Cadastro</button>
                 </div>
-                <!-- Formulários de Login e Cadastro -->
                 <div id="auth-forms-container"></div>
                 <div id="auth-message" class="mt-4 text-center text-sm h-5"></div>
             </div>
         </div>
     </div>
 
-    <!-- Tela Principal (Dashboard) -->
     <div id="dashboard-page" class="page">
         <nav class="bg-white shadow-sm sticky top-0 z-10">
             <div class="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -77,7 +72,6 @@
         <div class="container mx-auto p-6">
             <h1 class="text-3xl font-bold mb-6">Painel de Controle</h1>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Card de Transportadoras -->
                 <div data-route="transportadoras" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
                     <div class="flex items-center">
                         <div class="p-3 bg-blue-100 rounded-full"><i class="fa-solid fa-truck-fast text-2xl text-blue-600"></i></div>
@@ -85,7 +79,6 @@
                     </div>
                     <p class="text-gray-600 mt-2">Gerenciar parceiros de logística.</p>
                 </div>
-                <!-- Outros Cards (placeholders) -->
                 <div data-route="vendas" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
                      <div class="flex items-center">
                         <div class="p-3 bg-green-100 rounded-full"><i class="fa-solid fa-cash-register text-2xl text-green-600"></i></div>
@@ -118,7 +111,6 @@
         </div>
     </div>
     
-    <!-- Tela de Gerenciamento de Transportadoras -->
     <div id="transportadoras-page" class="page">
         <nav class="bg-white shadow-sm sticky top-0 z-10">
             <div class="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -215,15 +207,12 @@
                     </button>`
             };
             
-            // LÓGICA DE NAVEGAÇÃO / ROTEAMENTO
             const navigateTo = (pageId) => {
-                // Remove a classe 'active' de todas as páginas
                 pages.forEach(p => {
                     p.classList.remove('active');
                     p.style.display = 'none';
                 });
                 
-                // Adiciona a classe 'active' apenas à página de destino
                 const targetPage = document.getElementById(`${pageId}-page`);
                 if (targetPage) {
                     targetPage.classList.add('active');
@@ -257,7 +246,6 @@
                 }
             });
             
-            // LÓGICA DE AUTENTICAÇÃO
             const renderAuthForm = (tab = 'login') => {
                 authFormsContainer.innerHTML = templates[`${tab}Form`];
                 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -275,7 +263,6 @@
                 const submitButton = e.target.querySelector('button[type="submit"]');
                 const originalButtonText = submitButton.innerHTML;
                 
-                // Validações básicas
                 if (formId === 'register-form') {
                     const senha = document.getElementById('register-senha').value;
                     if (senha.length < 6) {
@@ -305,7 +292,6 @@
                         
                         const data = await response.json();
                         if (data.token) {
-                            // Armazenar token em variável em memória para esta sessão
                             window.authToken = data.token;
                             navigateTo('dashboard');
                         } else {
@@ -346,7 +332,6 @@
             };
             document.getElementById('logout-btn').addEventListener('click', logout);
             
-            // LÓGICA DE API (Fetch seguro)
             const apiFetch = async (endpoint, options = {}) => {
                 const token = window.authToken;
                 if (!token) { 
@@ -378,7 +363,6 @@
                 return response.status === 204 ? null : response.json();
             };
             
-            // LÓGICA DA PÁGINA DE TRANSPORTADORAS
             const renderTransportadoraPage = () => {
                 const formContainer = document.getElementById('form-adicionar-transportadora');
                 formContainer.innerHTML = templates.transportadoraForm;
@@ -515,15 +499,12 @@
                 }, 5000);
             }
 
-            // INICIALIZAÇÃO DA APLICAÇÃO
             const initializeApp = () => {
-                // Esconde todas as páginas primeiro
                 pages.forEach(p => {
                     p.classList.remove('active');
                     p.style.display = 'none';
                 });
                 
-                // Determina qual página mostrar
                 if (window.authToken) {
                     navigateTo('dashboard');
                 } else {
@@ -532,7 +513,7 @@
                 }
             };
             
-            // Inicializa a aplicação
+
             initializeApp();
         });
     </script>
