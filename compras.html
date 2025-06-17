@@ -345,8 +345,12 @@
             };
 
             const handleFinalizarCompra = async (e) => {
-                fetchCompras();
-                
+                e.preventDefault(); 
+                await fetchCompras();
+                itensDaCompraAtual = [];
+                compraAtivaId = null;
+                renderBotaoIniciarCompra();
+                showMessage(comprasMessage, 'A lista de compras foi atualizada.', 'sucesso');
             };
             
             const fetchCompras = async () => {
