@@ -321,10 +321,6 @@
 
             const handleFinalizarVenda = async (e) => {
                 e.preventDefault(); 
-                // Lógica adicional para talvez ATUALIZAR a data da venda antes de finalizar
-                const dataFinal = document.getElementById('entry-data-venda').value;
-                // Exemplo: await apiFetch(`/venda/atualizarData/${vendaAtivaId}`, { method: 'PUT', body: JSON.stringify({ dataVenda: dataFinal }) });
-                
                 await fetchVendas();
                 itensDaVendaAtual = [];
                 vendaAtivaId = null;
