@@ -134,6 +134,10 @@
                     <div class="text-center flex flex-col items-center justify-center h-full">
                         <h2 class="text-xl font-semibold mb-4 text-gray-700">Painel de Vendas</h2>
                         <p class="text-gray-500 mb-6">Clique no botão abaixo para registrar uma nova venda de produtos.</p>
+                        <div>
+                            <label for="entry-data-venda" class="text-sm text-gray-600">Data da Venda</label>
+                            <input type="date" id="entry-data-venda" class="w-full p-2 border border-gray-300 rounded-md">
+                        </div>
                         <button id="iniciar-venda-btn" class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 shadow-lg hover:shadow-xl transition-all">
                             <i class="fa-solid fa-cart-plus mr-2"></i> Iniciar Nova Venda
                         </button>
@@ -177,10 +181,6 @@
                     <h2 class="text-xl font-semibold mb-4 border-b pb-3 flex justify-between items-center">
                         <span><i class="fa-solid fa-cart-shopping text-green-500"></i> Nova Venda</span>
                         <span class="font-bold text-green-600 text-base py-1 px-2 bg-green-100 rounded">ID: #${idVenda}</span>
-                        <div>
-                            <label for="entry-data-venda" class="text-sm text-gray-600">Data da Venda</label>
-                            <input type="date" id="entry-data-venda" class="w-full p-2 border border-gray-300 rounded-md">
-                        </div>
                     </h2>
                     <form id="form-venda-ativa">
                         <hr class="my-6 border-t-2 border-dashed">
