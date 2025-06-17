@@ -312,7 +312,7 @@
                 try {
                     const token = localStorage.getItem('authToken');
                     console.log(token);
-                    return await apiFetch('/produtos', {
+                    return await apiFetch('/produtos/listar', {
                         headers: { Authorization: `Bearer ${token}` },
                     });
                 } catch (error) {

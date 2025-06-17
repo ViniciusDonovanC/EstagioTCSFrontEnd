@@ -291,7 +291,7 @@
             async function buscarProdutos() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    return await apiFetch('/produtos', { headers: { Authorization: `Bearer ${token}` } });
+                    return await apiFetch('/produtos/listar', { headers: { Authorization: `Bearer ${token}` } });
                 } catch (error) {
                     console.error("Falha ao buscar produtos:", error);
                     alert("Não foi possível carregar a lista de produtos.");
