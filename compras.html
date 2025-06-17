@@ -392,7 +392,8 @@
                 const ctx = document.getElementById('compras-chart').getContext('2d');
                 const purchasesByDate = data.reduce((acc, purchase) => {
                     const date = new Date(purchase.dataCompra + 'T00:00:00-03:00').toLocaleDateString('pt-BR');
-                    acc[date] = (acc[date] || 0) + purchase.gastoTotal;
+                    acc[date] = (acc[date] || 0) + purchase.gastoTotal; 
+                    
                     return acc;
                 }, {});
                 const sortedDates = Object.keys(purchasesByDate).sort((a, b) => new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-')));
@@ -405,6 +406,8 @@
                         }]
                     }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
                 });
+
+                
             };
 
             renderBotaoIniciarCompra();
