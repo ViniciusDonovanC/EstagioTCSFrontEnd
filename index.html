@@ -180,7 +180,6 @@
 
                     try {
                         const token = localStorage.getItem('authToken');
-                        console.log(token)
                         console.log(formData)
                         if (!token) {
                             alert('Sessão expirada. Redirecionando para o login.');
@@ -191,7 +190,6 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}` 
                             },
                             body: JSON.stringify(formData),
                         });
