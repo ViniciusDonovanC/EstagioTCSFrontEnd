@@ -113,10 +113,9 @@
                 formContainer.innerHTML = `
                     <div class="mb-4"><label for="funcionario-nome" class="block text-sm font-medium">Nome Completo</label><input type="text" id="funcionario-nome" required class="w-full mt-1 p-2 border rounded"></div>
                     <div class="mb-4"><label for="funcionario-login" class="block text-sm font-medium">Login (Email)</label><input type="email" id="funcionario-login" required class="w-full mt-1 p-2 border rounded"></div>
-                    <div class="mb-4"><label for="funcionario-senha" class="block text-sm font-medium">Senha</label><input type="password" id="funcionario-senha" required class="w-full mt-1 p-2 border rounded"></div>
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div><label for="funcionario-idade" class="block text-sm font-medium">Idade</label><input type="number" id="funcionario-idade" required min="18" class="w-full mt-1 p-2 border rounded"></div>
-                        <div><label for="funcionario-genero" class="block text-sm font-medium">Gênero</label><select id="funcionario-genero" required class="w-full mt-1 p-2 border rounded bg-white"><option value="">Selecione</option><option value="FEMININO">Feminino</option><option value="MASCULINO">Masculino</option><option value="OUTROS">Outro</option></select></div>
+                        <div><label for="funcionario-genero" class="block text-sm font-medium">Gênero</label><select id="funcionario-genero" required class="w-full mt-1 p-2 border rounded bg-white"><option value="">Selecione</option><option value="Feminino">Feminino</option><option value="Masculino">Masculino</option><option value="Outros">Outro</option></select></div>
                     </div>
                     <div class="mb-4"><label for="funcionario-salario" class="block text-sm font-medium">Salário Base (R$)</label><input type="number" id="funcionario-salario" required step="0.01" value="0.00" class="w-full mt-1 p-2 border rounded"></div>
                     <div class="mb-4"><label for="funcionario-setor" class="block text-sm font-medium">Setor</label><select id="funcionario-setor" required class="w-full mt-1 p-2 border rounded bg-white"></select></div>
@@ -158,9 +157,8 @@
             const handleAddFuncionario = async (e) => {
                 e.preventDefault();
                 const formData = {
-                    nomeCompleto: document.getElementById('funcionario-nome').value,
+                    nomeFuncionario: document.getElementById('funcionario-nome').value,
                     login: document.getElementById('funcionario-login').value,
-                    senha: document.getElementById('funcionario-senha').value,
                     idade: parseInt(document.getElementById('funcionario-idade').value),
                     genero: document.getElementById('funcionario-genero').value,
                     salarioBase: parseFloat(document.getElementById('funcionario-salario').value),
@@ -174,11 +172,12 @@
                 }
 
                 try {
+                    
                     await apiFetch('/funcionario/adicionar', { method: 'POST', body: formData });
                     showMessage(appMessage, 'Funcionário salvo com sucesso!', 'sucesso');
                     e.target.reset();
                     fetchFuncionarios();
-                } catch(error) { /* Erro já tratado em apiFetch */ }
+                } catch(error) {}
             };
 
             // Event listener para exclusão

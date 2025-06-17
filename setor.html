@@ -74,7 +74,6 @@
             const apiFetch = async (endpoint, options = {}) => {
                 // CORREÇÃO: Pega o token salvo no localStorage (pela página de login)
                 const token = localStorage.getItem('authToken');
-                console.log(token);
                 if (!token) {
                     alert('Sessão expirada ou não iniciada. Redirecionando para o login.');
                     window.location.href = 'index.html';
