@@ -72,7 +72,6 @@
             const API_BASE_URL = 'http://localhost:8080';
             let editingProdutoId = null; 
 
-            // --- FUNÇÕES DE API E UTILITÁRIOS (Reutilizadas) ---
             async function apiFetch(endpoint, options = {}) {
                 const config = {
                     method: options.method || 'GET',
@@ -87,6 +86,25 @@
                         throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
                     }
                     return response.status === 204 ? null : response.json();
+                } catch (error) {
+                    console.error(`Erro na chamada da API para ${endpoint}:`, error);
+                    alert(`Erro de comunicação com o servidor: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            async function apiFetchDefaultResponse(endpoint, options = {}) {
+                const config = {
+                    method: options.method || 'POST',
+                    headers: { 'Content-Type': 'application/json', ...options.headers, },
+                };
+                if (options.body)config.body = options.body
+                try {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                        throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
+                    }
                 } catch (error) {
                     console.error(`Erro na chamada da API para ${endpoint}:`, error);
                     alert(`Erro de comunicação com o servidor: ${error.message}`);
@@ -153,7 +171,7 @@
 
                 try {
                     const token = localStorage.getItem('authToken');
-                    await apiFetch('/produtos/registro', {
+                    await apiFetchDefaultResponse('/produtos/registro', {
                         method: 'POST',
                         headers: { Authorization: `Bearer ${token}` },
                         body: JSON.stringify(produtoData)
