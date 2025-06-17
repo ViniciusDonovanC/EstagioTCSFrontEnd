@@ -165,7 +165,7 @@
                     const novaVenda = await apiFetch('/venda/vender', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                        body: JSON.stringify({ dataVenda: "2025-06-01", totalVenda: 0 }),
+                        body: JSON.stringify({ dataVenda: "2025-06-02", totalVenda: 0 }),
                     });
 
                     vendaAtivaId = novaVenda;
