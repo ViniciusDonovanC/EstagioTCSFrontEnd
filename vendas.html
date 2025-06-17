@@ -148,13 +148,14 @@
                 btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Gerando ID da Venda...`;
                 try {
                     const token = localStorage.getItem('authToken');
+                    const dataVenda = new Date().toISOString();
                     const novaVenda = await apiFetch('/venda/vender', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                        body: JSON.stringify({ dataVenda: new Date().toISOString(), totalVenda: 0 }),
+                        body: JSON.stringify({ dataVenda: dataVenda, totalVenda: 0 }),
                     });
                     vendaAtivaId = novaVenda;
-                    renderFormularioVenda(vendaAtivaId);
+                    renderFormularioVenda(vendaAtivaId, dataVenda);
                 } catch (error) {
                     alert('Erro ao iniciar nova venda. Tente novamente.');
                     renderBotaoIniciarVenda();
@@ -168,6 +169,10 @@
                         <span class="font-bold text-green-600 text-base py-1 px-2 bg-green-100 rounded">ID: #${idVenda}</span>
                     </h2>
                     <form id="form-venda-ativa">
+                        <div>
+                            <label for="entry-data-venda" class="text-sm text-gray-600">Data da Venda</label>
+                            <input type="date" id="entry-data-venda" class="w-full p-2 border border-gray-300 rounded-md">
+                        </div>
                         <hr class="my-6 border-t-2 border-dashed">
                         <div class="p-4 bg-gray-50 border rounded-lg"><h3 class="text-lg font-medium text-gray-800 mb-3">Adicionar Produto</h3><div id="item-entry-form" class="space-y-3">
                             <div><label class="text-sm text-gray-600">Produto</label><select id="entry-produto-select" class="w-full p-2 border border-gray-300 rounded-md"></select></div>
@@ -186,6 +191,13 @@
                         <button type="submit" class="w-full mt-6 bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-700"><i class="fa-solid fa-floppy-disk"></i> Finalizar e Registrar Venda</button>
                     </form>
                 `;
+
+                // --- CÓDIGO INSERIDO PARA PREENCHER A DATA ATUAL ---
+                const dataInput = document.getElementById('entry-data-venda');
+                const hoje = new Date();
+                hoje.setMinutes(hoje.getMinutes() - hoje.getTimezoneOffset()); // Ajuste para fuso horário local
+                dataInput.value = hoje.toISOString().slice(0, 10); // Formata para YYYY-MM-DD
+                // --- FIM DO CÓDIGO INSERIDO ---
 
                 const produtoSelect = document.getElementById('entry-produto-select');
                 produtoSelect.innerHTML = '<option value="">Selecione um produto...</option>';
@@ -298,6 +310,10 @@
 
             const handleFinalizarVenda = async (e) => {
                 e.preventDefault(); 
+                // Lógica adicional para talvez ATUALIZAR a data da venda antes de finalizar
+                const dataFinal = document.getElementById('entry-data-venda').value;
+                // Exemplo: await apiFetch(`/venda/atualizarData/${vendaAtivaId}`, { method: 'PUT', body: JSON.stringify({ dataVenda: dataFinal }) });
+                
                 await fetchVendas();
                 itensDaVendaAtual = [];
                 vendaAtivaId = null;
