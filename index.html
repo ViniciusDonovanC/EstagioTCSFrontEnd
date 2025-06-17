@@ -181,6 +181,7 @@
                     try {
                         const token = localStorage.getItem('authToken');
                         console.log(formData)
+                        console.log(JSON.stringify(formData))
                         if (!token) {
                             alert('Sessão expirada. Redirecionando para o login.');
                             window.location.href = 'index.html';
