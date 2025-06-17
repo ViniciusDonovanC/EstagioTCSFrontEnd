@@ -161,10 +161,11 @@
                         return;
                     }
                     const dataVenda = new Date(dataSelecionada).toISOString();
+                    console.log(dataVenda);
                     const novaVenda = await apiFetch('/venda/vender', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                        body: JSON.stringify({ dataVenda: dataVenda, totalVenda: 0 }),
+                        body: JSON.stringify({ dataVenda: "2025-06-01", totalVenda: 0 }),
                     });
 
                     vendaAtivaId = novaVenda;
