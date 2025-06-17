@@ -46,7 +46,6 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Idade</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gênero</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Salário</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Setor</th>
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
                                     </tr>
@@ -63,178 +62,140 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const appMessage = document.getElementById('app-message');
-            
-            // --- Dados e Simulação de API ---
-            let mockFuncionarios = [
-                { id: 1, nome: 'Ana Silva', idade: 30, genero: 'Feminino', salario: 3500.00, setor: 'Farmácia' },
-                { id: 2, nome: 'Bruno Costa', idade: 25, genero: 'Masculino', salario: 2800.00, setor: 'Logística' },
-                { id: 3, nome: 'Carla Dias', idade: 45, genero: 'Feminino', salario: 5000.00, setor: 'Administrativo' },
-            ];
-            let nextFuncionarioId = 4;
-
-            // Dados mock para o dropdown de setores (idealmente, viria de uma API de setores)
-            const mockSetores = ['Farmácia', 'Administrativo', 'Logística', 'Vendas', 'Compras'];
+            const formContainer = document.getElementById('form-adicionar-funcionario');
+            const tabelaFuncionarios = document.getElementById('tabela-funcionarios');
+            const API_BASE_URL = 'http://localhost:8080';
 
             const apiFetch = async (endpoint, options = {}) => {
-                console.log(`API Call (Simulated): ${options.method || 'GET'} ${endpoint}`);
-                await new Promise(resolve => setTimeout(resolve, 300)); // Simula um atraso de rede
-
-                if (endpoint === '/funcionarios' && (!options.method || options.method === 'GET')) {
-                    return [...mockFuncionarios];
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    alert('Sessão expirada. Redirecionando para o login.');
+                    window.location.href = 'index.html';
+                    throw new Error('Token não encontrado.');
                 }
-                if (endpoint === '/funcionarios/registro' && options.method === 'POST') {
-                    const newFuncionario = JSON.parse(options.body);
-                    newFuncionario.id = nextFuncionarioId++;
-                    mockFuncionarios.push(newFuncionario);
-                    return newFuncionario;
+                const config = { method: options.method || 'GET', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...options.headers } };
+                if (options.body) { config.body = JSON.stringify(options.body); }
+                try {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(errorText || 'Erro na requisição');
+                    }
+                    return response.status === 204 ? null : response.json();
+                } catch (error) {
+                    showMessage(appMessage, error.message, 'erro');
+                    throw error;
                 }
-                if (endpoint.startsWith('/funcionarios/') && options.method === 'DELETE') {
-                    const idToDelete = parseInt(endpoint.split('/').pop());
-                    mockFuncionarios = mockFuncionarios.filter(f => f.id !== idToDelete);
-                    return null;
-                }
-                throw new Error('Endpoint simulado não encontrado.');
+            };
+            
+            const showMessage = (element, text, type = 'sucesso') => {
+                element.innerHTML = `<div class="p-3 my-2 rounded-md ${type === 'sucesso' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${text}</div>`;
+                element.classList.remove('hidden');
+                setTimeout(() => element.classList.add('hidden'), 5000);
             };
 
-            // --- Funções da Página ---
-            const formContainer = document.getElementById('form-adicionar-funcionario');
-            formContainer.innerHTML = `
-                <div class="mb-4">
-                    <label for="funcionario-nome" class="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
-                    <input type="text" id="funcionario-nome" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Nome do funcionário">
-                </div>
-                <div class="mb-4">
-                    <label for="funcionario-idade" class="block text-sm font-medium text-gray-700 mb-1">Idade</label>
-                    <input type="number" id="funcionario-idade" required min="18" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Idade">
-                </div>
-                <div class="mb-4">
-                    <label for="funcionario-genero" class="block text-sm font-medium text-gray-700 mb-1">Gênero</label>
-                    <select id="funcionario-genero" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
-                        <option value="">Selecione</option>
-                        <option value="Feminino">Feminino</option>
-                        <option value="Masculino">Masculino</option>
-                        <option value="Outro">Outro</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label for="funcionario-salario" class="block text-sm font-medium text-gray-700 mb-1">Salário (R$)</label>
-                    <input type="number" id="funcionario-salario" required step="0.01" min="0" value="0.00" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="0.00">
-                </div>
-                <div class="mb-4">
-                    <label for="funcionario-setor" class="block text-sm font-medium text-gray-700 mb-1">Setor</label>
-                    <select id="funcionario-setor" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
-                        <option value="">Selecione um setor</option>
-                        ${mockSetores.map(setor => `<option value="${setor}">${setor}</option>`).join('')}
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition disabled:opacity-50">
-                    <i class="fa-solid fa-floppy-disk"></i> Salvar
-                </button>`;
+            const populateSetorDropdown = async (selectElement) => {
+                try {
+                    const setores = await apiFetch('/setores'); // Busca os setores reais
+                    selectElement.innerHTML = '<option value="">Selecione um setor</option>';
+                    setores.forEach(setor => {
+                        // O texto visível é o nome, mas o valor é o ID
+                        selectElement.add(new Option(setor.nome, setor.id));
+                    });
+                } catch (error) {
+                    console.error("Falha ao carregar setores:", error);
+                    selectElement.innerHTML = '<option value="">Erro ao carregar setores</option>';
+                }
+            };
+
+            // Renderiza o formulário e popula o dropdown de setores
+            const renderFormulario = async () => {
+                formContainer.innerHTML = `
+                    <div class="mb-4"><label for="funcionario-nome" class="block text-sm font-medium">Nome Completo</label><input type="text" id="funcionario-nome" required class="w-full mt-1 p-2 border rounded"></div>
+                    <div class="mb-4"><label for="funcionario-login" class="block text-sm font-medium">Login (Email)</label><input type="email" id="funcionario-login" required class="w-full mt-1 p-2 border rounded"></div>
+                    <div class="mb-4"><label for="funcionario-senha" class="block text-sm font-medium">Senha</label><input type="password" id="funcionario-senha" required class="w-full mt-1 p-2 border rounded"></div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div><label for="funcionario-idade" class="block text-sm font-medium">Idade</label><input type="number" id="funcionario-idade" required min="18" class="w-full mt-1 p-2 border rounded"></div>
+                        <div><label for="funcionario-genero" class="block text-sm font-medium">Gênero</label><select id="funcionario-genero" required class="w-full mt-1 p-2 border rounded bg-white"><option value="">Selecione</option><option value="FEMININO">Feminino</option><option value="MASCULINO">Masculino</option><option value="OUTROS">Outro</option></select></div>
+                    </div>
+                    <div class="mb-4"><label for="funcionario-salario" class="block text-sm font-medium">Salário Base (R$)</label><input type="number" id="funcionario-salario" required step="0.01" value="0.00" class="w-full mt-1 p-2 border rounded"></div>
+                    <div class="mb-4"><label for="funcionario-setor" class="block text-sm font-medium">Setor</label><select id="funcionario-setor" required class="w-full mt-1 p-2 border rounded bg-white"></select></div>
+                    <div class="mb-4"><label for="funcionario-acesso" class="block text-sm font-medium">Tipo de Acesso</label><select id="funcionario-acesso" required class="w-full mt-1 p-2 border rounded bg-white"><option value="FUNCIONARIO">Funcionário</option><option value="GERENTE">Gerente</option></select></div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                `;
+                
+                const setorSelect = document.getElementById('funcionario-setor');
+                await populateSetorDropdown(setorSelect);
+                
+                formContainer.addEventListener('submit', handleAddFuncionario);
+            };
 
             const renderTabelaFuncionarios = (data) => {
-                const tabela = document.getElementById('tabela-funcionarios');
-                const formatCurrency = (value) => {
-                    return parseFloat(value).toLocaleString('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    });
-                };
-
-                tabela.innerHTML = !data || data.length === 0 
+                tabelaFuncionarios.innerHTML = !data || data.length === 0 
                     ? `<tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">Nenhum funcionário cadastrado.</td></tr>`
                     : data.map(f => `
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm">${f.id}</td>
-                            <td class="px-6 py-4 text-sm font-medium">${f.nome}</td>
+                            <td class="px-6 py-4 text-sm font-medium">${f.nomeCompleto}</td>
                             <td class="px-6 py-4 text-sm">${f.idade}</td>
                             <td class="px-6 py-4 text-sm">${f.genero}</td>
-                            <td class="px-6 py-4 text-sm">${formatCurrency(f.salario)}</td>
-                            <td class="px-6 py-4 text-sm">${f.setor}</td>
+                            <td class="px-6 py-4 text-sm">${f.nomeSetor}</td>
                             <td class="px-6 py-4 text-right">
-                                <button class="btn-excluir text-red-600 hover:text-red-900 p-2 rounded" data-id="${f.id}" title="Excluir">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
+                                <button class="btn-excluir text-red-600 hover:text-red-900" data-id="${f.id}" title="Excluir"><i class="fa-solid fa-trash-can"></i></button>
                             </td>
                         </tr>`).join('');
             };
             
             const fetchFuncionarios = async () => {
                 try {
-                    const data = await apiFetch('/funcionarios');
+                    const data = await apiFetch('/funcionario');
                     renderTabelaFuncionarios(data);
                 } catch (error) {
-                    showMessage(appMessage, error.message, 'erro');
+                    console.error("Falha ao buscar funcionários:", error);
                 }
             };
             
-            const showMessage = (element, text, type = 'sucesso') => {
-                element.textContent = text;
-                element.className = `p-4 text-center rounded-md mx-4 my-2 ${type === 'sucesso' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
-                element.classList.remove('hidden');
-                setTimeout(() => element.classList.add('hidden'), 5000);
-            };
-
-            formContainer.addEventListener('submit', async (e) => {
+            const handleAddFuncionario = async (e) => {
                 e.preventDefault();
-                const nome = document.getElementById('funcionario-nome').value.trim();
-                const idade = parseInt(document.getElementById('funcionario-idade').value);
-                const genero = document.getElementById('funcionario-genero').value;
-                const salario = parseFloat(document.getElementById('funcionario-salario').value) || 0;
-                const setor = document.getElementById('funcionario-setor').value;
+                const formData = {
+                    nomeCompleto: document.getElementById('funcionario-nome').value,
+                    login: document.getElementById('funcionario-login').value,
+                    senha: document.getElementById('funcionario-senha').value,
+                    idade: parseInt(document.getElementById('funcionario-idade').value),
+                    genero: document.getElementById('funcionario-genero').value,
+                    salarioBase: parseFloat(document.getElementById('funcionario-salario').value),
+                    setorID: parseInt(document.getElementById('funcionario-setor').value),
+                    usuarioAcesso: document.getElementById('funcionario-acesso').value
+                };
 
-                // Validação básica dos campos
-                if (!nome || isNaN(idade) || idade < 18 || !genero || !setor) {
-                    showMessage(appMessage, 'Preencha todos os campos corretamente (idade mínima 18).', 'erro');
+                if (isNaN(formData.setorID)) {
+                    showMessage(appMessage, "Por favor, selecione um setor válido.", 'erro');
                     return;
                 }
-                
-                const submitButton = e.target.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
+
                 try {
-                    await apiFetch('/funcionarios/registro', { 
-                        method: 'POST', 
-                        body: JSON.stringify({ 
-                            nome, 
-                            idade, 
-                            genero, 
-                            salario, 
-                            setor 
-                        }) 
-                    });
+                    await apiFetch('/funcionario/adicionar', { method: 'POST', body: formData });
                     showMessage(appMessage, 'Funcionário salvo com sucesso!', 'sucesso');
-                    e.target.reset(); // Limpa o formulário
-                    // Reseta os campos numéricos e de seleção para seus valores padrão/placeholder
-                    document.getElementById('funcionario-idade').value = '';
-                    document.getElementById('funcionario-salario').value = '0.00';
-                    document.getElementById('funcionario-genero').value = ''; // Reseta o select para a opção "Selecione"
-                    document.getElementById('funcionario-setor').value = ''; // Reseta o select para a opção "Selecione um setor"
+                    e.target.reset();
+                    fetchFuncionarios();
+                } catch(error) { /* Erro já tratado em apiFetch */ }
+            };
 
-                    fetchFuncionarios(); // Recarrega a tabela
-                } catch(error) { 
-                    showMessage(appMessage, `Erro: ${error.message}`, 'erro'); 
-                } finally {
-                    submitButton.disabled = false;
-                }
-            });
-
-            document.getElementById('tabela-funcionarios').addEventListener('click', async (e) => {
+            // Event listener para exclusão
+            tabelaFuncionarios.addEventListener('click', async (e) => {
                 const btn = e.target.closest('.btn-excluir');
-                if (btn) {
-                    // Substitua a confirmação do navegador por uma modal personalizada se precisar de UI de confirmação
-                    // Por enquanto, remove a chamada a confirm() para compatibilidade com iframe
+                if (btn && confirm(`Tem certeza que deseja excluir o funcionário ID ${btn.dataset.id}?`)) {
                     try {
-                        await apiFetch(`/funcionarios/${btn.dataset.id}`, { method: 'DELETE' });
-                        showMessage(appMessage, 'Funcionário excluído com sucesso!', 'sucesso');
+                        await apiFetch(`/funcionario/${btn.dataset.id}`, { method: 'DELETE' });
+                        showMessage(appMessage, 'Excluído com sucesso!', 'sucesso');
                         fetchFuncionarios();
-                    } catch(error) { 
-                        showMessage(appMessage, `Erro: ${error.message}`, 'erro'); 
-                    }
+                    } catch(error) { /* Erro já tratado em apiFetch */ }
                 }
             });
 
-            fetchFuncionarios(); // Carga inicial dos funcionários
+            // Inicialização da página
+            renderFormulario();
+            fetchFuncionarios();
         });
     </script>
 </body>

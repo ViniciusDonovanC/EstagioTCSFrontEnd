@@ -32,7 +32,7 @@
             <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-1 space-y-6">
                     <div id="nova-compra-container" class="bg-white p-6 rounded-lg shadow-md min-h-[400px]">
-                        </div>
+                    </div>
                 </div>
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-lg shadow-md">
@@ -94,7 +94,7 @@
                 { id: 201, fornecedor: 'Distribuidora Farmacêutica Alpha', dataCompra: '2025-06-01', gastoTotal: 750.00, status: 'finalizada', itens: [{produtoId: 1, quantidade: 100, custoUnitario: 7.50 }] },
             ];
             let nextCompraId = 202;
- 
+
             async function apiFetch(endpoint, options = {}) {
                 const config = {
                     method: options.method || 'GET',
@@ -120,7 +120,35 @@
                         return null;
                     }
 
-                    return await response.json();
+                    return  response.json();
+
+                } catch (error) {
+                    console.error(`Erro na chamada da API para ${endpoint}:`, error);
+                    alert(`Erro de comunicação com o servidor: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            async function apiFetchDefaultResponse(endpoint, options = {}) {
+                const config = {
+                    method: options.method || 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers,
+                    },
+                };
+
+                if (options.body) {
+                    config.body = options.body;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                        throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
+                    }
 
                 } catch (error) {
                     console.error(`Erro na chamada da API para ${endpoint}:`, error);
@@ -167,7 +195,9 @@
                             totalVenda: 0,
                         }),
                     });
-                    compraAtivaId = novaCompra.id;
+                    compraAtivaId = novaCompra;
+                    console.log(novaCompra);
+                    console.log(compraAtivaId);
                     renderFormularioCompra(compraAtivaId);
                 } catch (error) {
                     alert('Erro ao iniciar nova compra. Tente novamente.');
@@ -214,15 +244,17 @@
                 buscarProdutos().then(produtos => {
                     todosOsProdutos = produtos;
                     produtos.forEach(p => {
-                            const option = new Option(p.nomeProduto, p.id);
-                            option.dataset.custo = p.valorCusto;
-                            option.dataset.qtd = p.qtdProduto;
-                            produtoSelect.appendChild(option);
-                        });
+                        // CORREÇÃO AQUI: Monta o texto da opção com o nome e a quantidade em estoque.
+                        const textoOpcao = `${p.nomeProduto} (Estoque: ${p.quantidade})`;
+                        const option = new Option(textoOpcao, p.id);
+                        
+                        option.dataset.custo = p.valorCusto;
+                        option.dataset.qtd = p.quantidade;
+                        produtoSelect.appendChild(option);
+                    });
 
                     produtoSelect.addEventListener('change', handleProdutoSelection);
                 });
-                produtoSelect.addEventListener('change', handleProdutoSelection);
                 document.getElementById('add-item-to-buy-btn').addEventListener('click', handleAdicionarItem);
                 document.getElementById('form-compra-ativa').addEventListener('submit', handleFinalizarCompra);
                 renderItensAdicionados();
@@ -246,6 +278,7 @@
                 addButton.disabled = true;
                 addButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Adicionando...`;
                 const token = localStorage.getItem('authToken');
+                console.log(token);
                 try {
                     const itemParaEnviar = {
                         idCompra: compraAtivaId,
@@ -253,32 +286,35 @@
                         qtdCompraProduto: quantidade
                     };
 
-                    await apiFetch(`/compra/adicionar`, {
+                    console.log(itemParaEnviar);
+
+                    await apiFetchDefaultResponse(`/compra/adicionar`, {
                         method: 'POST',
                         body: JSON.stringify(itemParaEnviar), 
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
+                        headers: { Authorization: `Bearer ${token}` },
                     });
 
                     const produtoSelecionado = todosOsProdutos.find(p => p.id === produtoId);
-                    itensDaCompraAtual.push({
-                        produtoId: produtoSelecionado.id,
-                        produtoNome: produtoSelecionado.nome,
-                        quantidade: quantidade,
-                        subtotal: quantidade * produtoSelecionado.custo
-                    });
+                    
+                    // Atualiza a lista local de itens da compra atual
+                    const itemExistente = itensDaCompraAtual.find(i => i.produtoId === produtoId);
+                    if (itemExistente) {
+                        itemExistente.quantidade += quantidade;
+                        itemExistente.subtotal = itemExistente.quantidade * produtoSelecionado.valorCusto;
+                    } else {
+                         itensDaCompraAtual.push({
+                            produtoId: produtoSelecionado.id,
+                            produtoNome: produtoSelecionado.nomeProduto,
+                            quantidade: quantidade,
+                            custoUnitario: produtoSelecionado.valorCusto,
+                            subtotal: quantidade * produtoSelecionado.valorCusto
+                        });
+                    }
+                   
                     renderItensAdicionados();
                     atualizarTotalCompra();
-                    buscarProdutos().then(produtos => {
-                        todosOsProdutos = produtos;
-                        produtos.forEach(p => {
-                            const option = new Option(p.nomeProduto, p.id);
-                            option.dataset.custo = p.valorCusto;
-                            option.dataset.qtd = p.qtdProduto;
-                            produtoSelect.appendChild(option);
-                        });
-                    });
+                    
+                    // Reseta os campos do formulário
                     select.value = "";
                     document.getElementById('entry-custo').value = "";
                     document.getElementById('entry-quantidade').value = "1";
@@ -293,13 +329,10 @@
             async function buscarProdutos() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const produtos = await apiFetch('/produtos', {
-                        method: 'GET',
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
+                    console.log(token);
+                    return await apiFetch('/produtos', {
+                        headers: { Authorization: `Bearer ${token}` },
                     });
-                    return produtos;
                 } catch (error) {
                     console.error("Falha ao buscar produtos:", error);
                     alert("Não foi possível carregar a lista de produtos.");
@@ -315,7 +348,8 @@
                     : itensDaCompraAtual.map(item => `
                         <tr class="border-b border-gray-200 last:border-b-0">
                             <td class="font-medium text-gray-700 py-2 px-2">${item.produtoNome}</td>
-                            <td class="text-gray-600 py-2 px-2">x ${item.custoUnitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                            <td class="text-gray-600 py-2 px-2">x ${item.quantidade}</td>
+                            <td class="text-right py-2 px-2">${item.custoUnitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                             <td class="font-semibold text-right py-2 px-2">${item.subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                         </tr>`).join('');
             };
@@ -343,7 +377,12 @@
                 submitButton.disabled = true;
                 submitButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Registrando...`;
                 try {
-                    await apiFetch(`/compras/${compraAtivaId}`, { method: 'PUT', body: JSON.stringify(compraFinal) });
+                    // Aqui você chamaria o backend para finalizar/atualizar a compra.
+                    // await apiFetch(`/compras/${compraAtivaId}`, { method: 'PUT', body: JSON.stringify(compraFinal) });
+                    
+                    // Simulação
+                    mockCompras.push({ id: compraAtivaId, ...compraFinal, status: 'finalizada' });
+
                     showMessage(comprasMessage, `Compra #${compraAtivaId} registrada com sucesso!`, 'sucesso');
                     itensDaCompraAtual = [];
                     compraAtivaId = null;
@@ -358,7 +397,8 @@
             
             const fetchCompras = async () => {
                 try {
-                    const data = await apiFetch('/compras');
+                    // const data = await apiFetch('/compras'); // Quando o backend estiver pronto
+                    const data = mockCompras; // Usando mock por enquanto
                     renderTabelaCompras(data);
                     if (currentComprasView === 'chart') {
                         renderComprasChart(data);
