@@ -344,6 +344,7 @@
             };
 
             const renderTabelaVendas = (data) => {
+                console.log(data);
                 tabelaVendas.innerHTML = !data || data.length === 0
                     ? `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Nenhuma venda registrada.</td></tr>`
                     : data.map(venda => `
