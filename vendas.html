@@ -36,11 +36,23 @@
                 </div>
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-lg shadow-md">
-                        <div class="p-6 border-b flex justify-between items-center">
+                        <div class="p-6 border-b flex flex-wrap justify-between items-center gap-4">
                             <h2 class="text-xl font-semibold"><i class="fa-solid fa-receipt text-blue-500"></i> Vendas Registradas</h2>
-                            <button id="toggle-view-btn-vendas" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition">
-                                <i class="fa-solid fa-chart-bar"></i> Visualizar Gráfico
-                            </button>
+                        
+                            <div class="flex items-center gap-4">
+                                <div id="sales-view-options" class="inline-flex rounded-md shadow-sm" role="group">
+                                    <button type="button" data-view="realizadas" class="view-btn bg-blue-600 text-white px-4 py-2 text-sm font-medium border border-gray-200 rounded-l-lg hover:bg-blue-700">
+                                        <i class="fa-solid fa-check-circle mr-2"></i>Realizadas
+                                    </button>
+                                    <button type="button" data-view="programadas" class="view-btn bg-white text-gray-900 px-4 py-2 text-sm font-medium border-t border-b border-r border-gray-200 hover:bg-gray-100">
+                                        <i class="fa-solid fa-clock mr-2"></i>Programadas
+                                    </button>
+                                </div>
+                        
+                                <button id="toggle-view-btn-vendas" class="bg-teal-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-600 transition">
+                                    <i class="fa-solid fa-chart-bar"></i> Visualizar Gráfico
+                                </button>
+                            </div>
                         </div>
                         <div id="vendas-message" class="p-4 text-center hidden"></div>
                         <div id="vendas-list-view" class="overflow-x-auto p-4">
@@ -73,6 +85,9 @@
             const toggleViewBtnVendas = document.getElementById('toggle-view-btn-vendas');
             const vendasListView = document.getElementById('vendas-list-view');
             const vendasChartView = document.getElementById('vendas-chart-view');
+            const salesViewOptions = document.getElementById('sales-view-options');
+            const viewButtons = salesViewOptions.querySelectorAll('.view-btn');
+            let currentSaleFilter = 'realizadas';
 
             const API_BASE_URL = 'http://localhost:8080';
             
@@ -81,12 +96,13 @@
             let currentVendasView = 'list';
             let vendasChartInstance = null;
             let todosOsProdutos = [];
+            let todasAsVendas = []; 
 
             async function apiFetch(endpoint, options = {}) {
                 const config = {
                     method: options.method || 'GET',
                     headers: { 'Content-Type': 'application/json', ...options.headers },
-                };
+                }
                 if (options.body) { config.body = options.body; }
                 try {
                     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
@@ -107,7 +123,7 @@
                 const config = {
                     method: options.method || 'GET',
                     headers: { 'Content-Type': 'application/json', ...options.headers, },
-                };
+                }
                 if (options.body) { config.body = options.body; }
                 try {
                     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
@@ -127,7 +143,7 @@
                 element.className = `p-4 text-center rounded-md mx-4 my-2 ${type === 'sucesso' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
                 element.classList.remove('hidden');
                 setTimeout(() => element.classList.add('hidden'), 5000);
-            };
+            }
 
             const renderBotaoIniciarVenda = () => {
                 novaVendaContainer.innerHTML = `
@@ -144,7 +160,7 @@
                     </div>
                 `;
                 document.getElementById('iniciar-venda-btn').addEventListener('click', handleIniciarVenda);
-            };
+            }
 
             const handleIniciarVenda = async (e) => {
                 const btn = e.target.closest('button');
@@ -171,8 +187,6 @@
                         body: JSON.stringify({ dataVenda: dataVenda, totalVenda: 0 }),
                     });
 
-                    console.log(novaVenda)
-
                     vendaAtivaId = novaVenda;
                     renderFormularioVenda(vendaAtivaId);
 
@@ -180,7 +194,7 @@
                     alert('Erro ao iniciar nova venda. Tente novamente.');
                     renderBotaoIniciarVenda();
                 }
-            };
+            }
 
             const renderFormularioVenda = (idVenda) => {
                 novaVendaContainer.innerHTML = `
@@ -216,8 +230,6 @@
                     produtos
                         .filter(p => p.quantidade > 0)
                         .forEach(p => {
-                            console.log(p)
-                            console.log(p.valorVenda)
                             const textoOpcao = `${p.nomeProduto} (Estoque: ${p.quantidade})`;
                             const option = new Option(textoOpcao, p.id);
                             option.dataset.preco = p.valorVenda; 
@@ -229,13 +241,13 @@
                 document.getElementById('add-item-to-sell-btn').addEventListener('click', handleAdicionarItem);
                 document.getElementById('form-venda-ativa').addEventListener('submit', handleFinalizarVenda);
                 renderItensAdicionados();
-            };
+            }
 
             const handleProdutoSelection = (e) => {
                 const precoInput = document.getElementById('entry-preco');
                 const selectedOption = e.target.options[e.target.selectedIndex];
                 precoInput.value = selectedOption.dataset.preco || '';
-            };
+            }
 
             const handleAdicionarItem = async () => {
                 const select = document.getElementById('entry-produto-select');
@@ -250,7 +262,7 @@
                 addButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Adicionando...`;
                 const token = localStorage.getItem('authToken');
                 try {
-                    const itemParaEnviar = { idVenda: vendaAtivaId, idProduto: produtoId, qtdVendaProduto: quantidade };
+                    const itemParaEnviar = { idVenda: vendaAtivaId, idProduto: produtoId, qtdVendaProduto: quantidade }
                     await apiFetchDefaultResponse(`/venda/adicionar`, {
                         method: 'POST',
                         body: JSON.stringify(itemParaEnviar), 
@@ -260,17 +272,17 @@
                     const produtoSelecionado = todosOsProdutos.find(p => p.id === produtoId);
                     const itemExistente = itensDaVendaAtual.find(i => i.produtoId === produtoId);
                     
-                    if (itemExistente) {
+                    if(itemExistente) {
                         itemExistente.quantidade += quantidade;
                         itemExistente.subtotal = itemExistente.quantidade * produtoSelecionado.valorVenda;
-                    } else {
+                    }else{
                          itensDaVendaAtual.push({
                             produtoId: produtoSelecionado.id,
                             produtoNome: produtoSelecionado.nomeProduto,
                             quantidade: quantidade,
                             precoUnitario: produtoSelecionado.valorVenda, 
                             subtotal: quantidade * produtoSelecionado.valorVenda
-                        });
+                        })
                     }
                    
                     renderItensAdicionados();
@@ -279,18 +291,18 @@
                     select.value = "";
                     document.getElementById('entry-preco').value = "";
                     document.getElementById('entry-quantidade').value = "1";
-                } catch (error) {
+                }catch(error){
                     alert(`Erro ao adicionar item: ${error.message}`);
-                } finally {
+                }finally{
                     addButton.disabled = false;
                     addButton.innerHTML = `<i class="fa-solid fa-plus"></i> Adicionar à Venda`;
                 }
-            };
+            }
             
-            async function buscarProdutos() {
-                try {
+            async function buscarProdutos(){
+                try{
                     const token = localStorage.getItem('authToken');
-                    return await apiFetch('/produtos/listar', { headers: { Authorization: `Bearer ${token}` } });
+                    return await apiFetch('/produtos/listar',{ headers:{ Authorization: `Bearer ${token}` } });
                 } catch (error) {
                     console.error("Falha ao buscar produtos:", error);
                     alert("Não foi possível carregar a lista de produtos.");
@@ -310,7 +322,7 @@
                             <td class="text-right py-2 px-2">${parseFloat(item.precoUnitario).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                             <td class="font-semibold text-right py-2 px-2">${parseFloat(item.subtotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                         </tr>`).join('');
-            };                  
+            }                  
 
             const atualizarTotalVenda = () => {
                 const totalDisplay = document.getElementById('venda-total-display');
@@ -318,35 +330,57 @@
                 const totalGeral = itensDaVendaAtual.reduce((acc, item) => acc + item.subtotal, 0);
 
                 totalDisplay.value = parseFloat(totalGeral).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            };
+            }
 
             const handleFinalizarVenda = async (e) => {
                 e.preventDefault(); 
-                await fetchVendas();
+                await fetchVendas(currentSaleFilter);
                 itensDaVendaAtual = [];
                 vendaAtivaId = null;
                 renderBotaoIniciarVenda();
                 showMessage(vendasMessage, 'A lista de vendas foi atualizada.', 'sucesso');
-            };
+            }
             
-            const fetchVendas = async () => {
+            const fetchVendas = async (currentSaleFilter) => {
                 try {
                     const token = localStorage.getItem('authToken');
                     const data = await apiFetch('/venda/listar', {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                     });
-                    renderTabelaVendas(data);
-                    if (currentVendasView === 'chart') {
-                        renderVendasChart(data);
-                    }
+
+                    todasAsVendas = data || []; 
+
+                    renderFilteredVendas(data);
                 } catch (error) {
                     showMessage(vendasMessage, error.message, 'erro');
                 }
-            };
+            }
+
+            const renderFilteredVendas = (filter) => {
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+
+                let vendasFiltradas = [];
+
+                if (filter === 'realizadas') {
+                    vendasFiltradas = todasAsVendas.filter(venda => {
+                        const dataVenda = new Date(venda.dataVenda);
+                        return dataVenda <= hoje;
+                    });
+                } else {
+                    vendasFiltradas = todasAsVendas.filter(venda => {
+                        const dataVenda = new Date(venda.dataVenda);
+                        return dataVenda > hoje;
+                    });
+                }
+                renderTabelaVendas(vendasFiltradas);
+                if (currentVendasView === 'chart') {
+                    renderVendasChart(vendasFiltradas);
+                }
+            }
 
             const renderTabelaVendas = (data) => {
-                console.log(data);
                 tabelaVendas.innerHTML = !data || data.length === 0
                     ? `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Nenhuma venda registrada.</td></tr>`
                     : data.map(venda => `
@@ -356,7 +390,7 @@
                             <td class="px-6 py-4 text-sm">${new Date(venda.dataVenda).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
                             <td class="px-6 py-4 text-sm font-semibold">${parseFloat(venda.totalCompra).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                         </tr>`).join('');
-            };               
+            }               
 
             const renderVendasChart = (data) => {
                 if (vendasChartInstance) vendasChartInstance.destroy();
@@ -393,10 +427,10 @@
                         } 
                     }
                 });
-            };
+            }
 
             renderBotaoIniciarVenda();
-            fetchVendas();
+            fetchVendas(currentSaleFilter);
 
             toggleViewBtnVendas.addEventListener('click', () => {
                 const isList = currentVendasView === 'list';
@@ -404,7 +438,23 @@
                 vendasChartView.classList.toggle('hidden', !isList);
                 toggleViewBtnVendas.innerHTML = isList ? '<i class="fa-solid fa-list"></i> Ver Lista' : '<i class="fa-solid fa-chart-bar"></i> Ver Gráfico';
                 currentVendasView = isList ? 'chart' : 'list';
-                if (currentVendasView === 'chart') fetchVendas();
+                if (currentVendasView === 'chart') fetchVendas(currentSaleFilter);
+            });
+
+            salesViewOptions.addEventListener('click', (e) => {
+                const clickedButton = e.target.closest('.view-btn');
+                if (!clickedButton) return;
+                const selectedView = clickedButton.dataset.view;
+                if (selectedView === currentSaleFilter) return;
+                currentSaleFilter = selectedView;
+                viewButtons.forEach(button => {
+                    const isSelected = button.dataset.view === currentSaleFilter;
+                    button.classList.toggle('bg-blue-600', isSelected);
+                    button.classList.toggle('text-white', isSelected);
+                    button.classList.toggle('bg-white', !isSelected);
+                    button.classList.toggle('text-gray-900', !isSelected);
+                });
+                fetchVendas(currentSaleFilter);
             });
         });
     </script>
