@@ -356,7 +356,7 @@
             const fetchCompras = async () => {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const data = await apiFetch('/compras/listar', {
+                    const data = await apiFetch('/compra/listar', {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
@@ -377,8 +377,8 @@
                     ? `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Nenhuma compra registrada.</td></tr>`
                     : data.map(compra => `
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 text-sm">${compra.id}</td>
-                            <td class="px-6 py-4 text-sm font-medium">${compra.funcionario}</td>
+                            <td class="px-6 py-4 text-sm">${compra.idCompra}</td>
+                            <td class="px-6 py-4 text-sm font-medium">${compra.idFuncionario}</td>
                             <td class="px-6 py-4 text-sm">${new Date(compra.dataCompra + 'T00:00:00-03:00').toLocaleDateString('pt-BR')}</td>
                             <td class="px-6 py-4 text-sm font-semibold">${compra.totalCompra.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                             <td class="px-6 py-4 text-right">
@@ -427,7 +427,7 @@
                 const btn = e.target.closest('.btn-excluir');
                 if (btn && confirm(`Excluir compra ID ${btn.dataset.id}?`)) {
                     try {
-                       await apiFetch(`/compras/${btn.dataset.id}`, { method: 'DELETE' });
+                       await apiFetch(`/compra/${btn.dataset.id}`, { method: 'DELETE' });
                        showMessage(comprasMessage, 'Compra excluída com sucesso!', 'sucesso');
                        fetchCompras();
                     } catch(error) { 
