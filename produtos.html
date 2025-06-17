@@ -175,7 +175,7 @@
             const fetchProdutos = async () => {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const data = await apiFetch('/produtos', {
+                    const data = await apiFetch('/produtos/listar', {
                         headers: { Authorization: `Bearer ${token}` },
                     });
                     renderTabelaProdutos(data);
@@ -206,17 +206,6 @@
                 const editBtn = e.target.closest('.btn-editar');
                 const deleteBtn = e.target.closest('.btn-excluir');
                 const token = localStorage.getItem('authToken');
-
-                if (editBtn) {
-                    const id = editBtn.dataset.id;
-                    try {
-                        const produto = await apiFetch(`/produtos/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-                        renderFormularioProduto(produto);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    } catch(error) {
-                        showMessage(produtosMessage, `Erro ao buscar produto: ${error.message}`, 'erro'); 
-                    }
-                }
 
                 if (deleteBtn) {
                     const id = deleteBtn.dataset.id;

@@ -147,7 +147,7 @@
             
             const fetchFuncionarios = async () => {
                 try {
-                    const data = await apiFetch('/funcionario');
+                    const data = await apiFetch('/funcionario/listar');
                     renderTabelaFuncionarios(data);
                 } catch (error) {
                     console.error("Falha ao buscar funcionários:", error);

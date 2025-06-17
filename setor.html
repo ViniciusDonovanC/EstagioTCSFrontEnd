@@ -146,7 +146,7 @@
             const fetchSetores = async () => {
                 try {
                     // CORREÇÃO: Endpoint é /set
-                    const data = await apiFetch('/setores');
+                    const data = await apiFetch('/setores/listar');
                     renderTabelaSetores(data);
                 } catch (error) {
                     console.error("Falha ao buscar setores:", error);
