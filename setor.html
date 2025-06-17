@@ -69,8 +69,7 @@
             const formContainer = document.getElementById('form-adicionar-setor');
             const tabelaSetores = document.getElementById('tabela-setores');
             const API_BASE_URL = 'http://localhost:8080';
-
-            // Função para fazer requisições à API, agora com autenticação real
+            
             const apiFetch = async (endpoint, options = {}) => {
                 const token = localStorage.getItem('authToken');
                 if (!token) {
