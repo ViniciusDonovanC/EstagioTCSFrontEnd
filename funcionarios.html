@@ -96,10 +96,9 @@
 
             const populateSetorDropdown = async (selectElement) => {
                 try {
-                    const setores = await apiFetch('/setores'); // Busca os setores reais
+                    const setores = await apiFetch('/setores/listar');
                     selectElement.innerHTML = '<option value="">Selecione um setor</option>';
                     setores.forEach(setor => {
-                        // O texto visível é o nome, mas o valor é o ID
                         selectElement.add(new Option(setor.nome, setor.id));
                     });
                 } catch (error) {
