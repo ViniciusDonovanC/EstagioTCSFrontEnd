@@ -351,12 +351,10 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm">${venda.idVenda}</td>
                             <td class="px-6 py-4 text-sm font-medium">${venda.nomeFuncionario}</td>
-                            <td class="px-6 py-4 text-sm">${new Date(venda.dataVenda + 'T00:00:00-03:00').toLocaleDateString('pt-BR')}</td>
-
-                            /* CORRIGIDO AQUI */
-                            <td class="px-6 py-4 text-sm font-semibold">${parseFloat(venda.totalVenda).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                            <td class="px-6 py-4 text-sm">${new Date(venda.dataVenda).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
+                            <td class="px-6 py-4 text-sm font-semibold">${parseFloat(venda.totalCompra).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                         </tr>`).join('');
-            };              
+            };               
 
             const renderVendasChart = (data) => {
                 if (vendasChartInstance) vendasChartInstance.destroy();
