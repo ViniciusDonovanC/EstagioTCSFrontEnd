@@ -60,6 +60,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const appMessage = document.getElementById('app-message');
+            const API_BASE_URL = 'http://localhost:8080';
             
             let mockTransportadoras = [
                 { id: 1, nome: 'Transporte Rápido Ltda.', estadosCobertura: ['SP', 'MG', 'RJ'] },
@@ -68,28 +69,46 @@
             ];
             let nextTransportadoraId = 4;
 
-            const apiFetch = async (endpoint, options = {}) => {
-                console.log(`API Call (Simulated): ${options.method || 'GET'} ${endpoint}`);
-                await new Promise(resolve => setTimeout(resolve, 300));
+            async function apiFetch(endpoint, options = {}) {
+                const config = {
+                    method: options.method || 'GET',
+                    headers: { 'Content-Type': 'application/json', ...options.headers },
+                };
+                if (options.body) config.body = options.body;
+                try {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                        throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
+                    }
+                    if (response.status === 204) return null;
+                    return response.json();
+                } catch (error) {
+                    console.error(`Erro na chamada da API para ${endpoint}:`, error);
+                    alert(`Erro de comunicação com o servidor: ${error.message}`);
+                    throw error;
+                }
+            }
+            
+            async function apiFetchDefaultResponse(endpoint, options = {}) {
+                const config = {
+                    method: options.method || 'GET',
+                    headers: { 'Content-Type': 'application/json', ...options.headers, },
+                };
+                if (options.body) config.body = options.body;
+                try {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                        throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error(`Erro na chamada da API para ${endpoint}:`, error);
+                    alert(`Erro de comunicação com o servidor: ${error.message}`);
+                    throw error;
+                }
+            }
 
-                if (endpoint === '/transportadoras' && (!options.method || options.method === 'GET')) {
-                    return [...mockTransportadoras];
-                }
-                if (endpoint === '/transportadoras/registro' && options.method === 'POST') {
-                    const newTransportadora = JSON.parse(options.body);
-                    newTransportadora.id = nextTransportadoraId++;
-                    mockTransportadoras.push(newTransportadora);
-                    return newTransportadora;
-                }
-                if (endpoint.startsWith('/transportadoras/') && options.method === 'DELETE') {
-                    const idToDelete = parseInt(endpoint.split('/').pop());
-                    mockTransportadoras = mockTransportadoras.filter(t => t.id !== idToDelete);
-                    return null;
-                }
-                throw new Error('Endpoint simulado não encontrado.');
-            };
-
-            // --- Funções da Página ---
             const formContainer = document.getElementById('form-adicionar-transportadora');
             formContainer.innerHTML = `
                 <div class="mb-4">
@@ -134,7 +153,7 @@
             
             const fetchTransportadoras = async () => {
                 try {
-                    const data = await apiFetch('/transportadoras');
+                    const data = await apiFetch('/transportadoras/listar');
                     renderTabelaTransportadoras(data);
                 } catch (error) {
                     showMessage(appMessage, error.message, 'erro');
