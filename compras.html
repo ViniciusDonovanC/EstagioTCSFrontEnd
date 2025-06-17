@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,21 +10,59 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .page-content { animation: fadeIn 0.4s ease-in-out; }
-        #compras-chart-view { min-height: 400px; display: flex; align-items: center; justify-content: center; padding-bottom: 20px; }
-        #compras-chart { max-height: 100%; width: 100%; }
-        .summary-table th, .summary-table td { padding: 0.75rem 1rem; text-align: left; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-content {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        #compras-chart-view {
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 20px;
+        }
+
+        #compras-chart {
+            max-height: 100%;
+            width: 100%;
+        }
+
+        .summary-table th,
+        .summary-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
     </style>
 </head>
+
 <body class="text-gray-800">
 
     <div class="page-content">
         <nav class="bg-white shadow-sm sticky top-0 z-10">
             <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-                <div class="text-xl font-bold text-gray-800"><i class="fa-solid fa-box-archive text-yellow-500"></i> Gerenciar Compras</div>
-                <a href="dashboard.html" class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition">
+                <div class="text-xl font-bold text-gray-800">
+                    <i class="fa-solid fa-box-archive text-yellow-500">
+                    </i> Gerenciar Compras
+                </div>
+                <a href="dashboard.html"
+                    class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition">
                     <i class="fa-solid fa-arrow-left"></i> Voltar ao Início
                 </a>
             </div>
@@ -37,9 +76,14 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-lg shadow-md">
                         <div class="p-6 border-b flex justify-between items-center">
-                            <h2 class="text-xl font-semibold"><i class="fa-solid fa-list-ul text-purple-500"></i> Compras Registradas</h2>
-                            <button id="toggle-view-btn-compras" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition">
-                                <i class="fa-solid fa-chart-bar"></i> Visualizar Gráfico
+                            <h2 class="text-xl font-semibold">
+                                <i class="fa-solid fa-list-ul text-purple-500">
+                                </i> Compras Registradas
+                            </h2>
+                            <button id="toggle-view-btn-compras"
+                                class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition">
+                                <i class="fa-solid fa-chart-bar">
+                                </i> Visualizar Gráfico
                             </button>
                         </div>
                         <div id="compras-message" class="p-4 text-center hidden"></div>
@@ -47,24 +91,29 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Funcionário</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gasto Total</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Funcionário</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Gasto Total</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabela-compras" class="bg-white divide-y divide-gray-200"></tbody>
                             </table>
                         </div>
                         <div id="compras-chart-view" class="p-4 hidden">
-                            <canvas id="compras-chart"></canvas>
+                            <canvas id="compras-chart">
+                            </canvas>
                         </div>
                     </div>
                 </div>
             </main>
         </div>
     </div>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const novaCompraContainer = document.getElementById('nova-compra-container');
@@ -75,18 +124,18 @@
             const comprasChartView = document.getElementById('compras-chart-view');
 
             const API_BASE_URL = 'http://localhost:8080';
-            
+
             let itensDaCompraAtual = [];
             let compraAtivaId = null;
             let currentComprasView = 'list';
             let comprasChartInstance = null;
             let todosOsProdutos = [];
 
-            // --- 2. BANCO DE DADOS FICTÍCIO ---
-    
+
             let nextCompraId = 202;
 
             async function apiFetch(endpoint, options = {}) {
+
                 const config = {
                     method: options.method || 'GET',
                     headers: {
@@ -111,7 +160,7 @@
                         return null;
                     }
 
-                    return  response.json();
+                    return response.json();
 
                 } catch (error) {
                     console.error(`Erro na chamada da API para ${endpoint}:`, error);
@@ -147,7 +196,7 @@
                     throw error;
                 }
             }
-        
+
 
             const showMessage = (element, text, type = 'sucesso') => {
                 element.textContent = text;
@@ -162,7 +211,8 @@
                         <h2 class="text-xl font-semibold mb-4 text-gray-700">Painel de Compras</h2>
                         <p class="text-gray-500 mb-6">Clique no botão abaixo para registrar uma nova entrada de produtos.</p>
                         <button id="iniciar-compra-btn" class="w-full bg-yellow-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-yellow-600 shadow-lg hover:shadow-xl transition-all">
-                            <i class="fa-solid fa-plus-circle mr-2"></i> Iniciar Nova Compra
+                            <i class="fa-solid fa-plus-circle mr-2"><
+                            /i> Iniciar Nova Compra
                         </button>
                     </div>
                 `;
@@ -174,23 +224,32 @@
                 btn.disabled = true;
                 btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Gerando ID da Compra...`;
                 try {
+
                     const token = localStorage.getItem('authToken');
+
                     const novaCompra = await apiFetch('/compra/comprar', {
                         method: 'POST',
+
                         headers: {
                             'Content-Type': 'application/json',
                             Authorization: `Bearer ${token}`,
                         },
+
                         body: JSON.stringify({
                             dataVenda: new Date().toISOString(),
                             totalVenda: 0,
-                        }),
-                    });
+                        }
+                        ),
+                    }
+                    );
+
                     compraAtivaId = novaCompra;
                     console.log(novaCompra);
                     console.log(compraAtivaId);
                     renderFormularioCompra(compraAtivaId);
-                } catch (error) {
+
+                }
+                catch (error) {
                     alert('Erro ao iniciar nova compra. Tente novamente.');
                     renderBotaoIniciarCompra();
                 }
@@ -199,26 +258,48 @@
             const renderFormularioCompra = (idCompra) => {
                 novaCompraContainer.innerHTML = `
                     <h2 class="text-xl font-semibold mb-4 border-b pb-3 flex justify-between items-center">
-                        <span><i class="fa-solid fa-dolly text-yellow-500"></i> Nova Compra</span>
+                        <span><i class="fa-solid fa-dolly text-yellow-500">
+                        </i> Nova Compra</span>
                         <span class="font-bold text-yellow-600 text-base py-1 px-2 bg-yellow-100 rounded">ID: #${idCompra}</span>
                     </h2>
                     <form id="form-compra-ativa">
                         <hr class="my-6 border-t-2 border-dashed">
-                        <div class="p-4 bg-gray-50 border rounded-lg"><h3 class="text-lg font-medium text-gray-800 mb-3">Adicionar Produto</h3><div id="item-entry-form" class="space-y-3">
-                            <div><label class="text-sm text-gray-600">Produto</label><select id="entry-produto-select" class="w-full p-2 border border-gray-300 rounded-md"></select></div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div><label class="text-sm text-gray-600">Custo Unit. (R$)</label><input type="text" id="entry-custo" readonly class="w-full p-2 bg-gray-200 border rounded-md"></div>
-                                <div><label class="text-sm text-gray-600">Quantidade</label><input type="number" id="entry-quantidade" min="1" value="1" class="w-full p-2 border border-gray-300 rounded-md"></div>
+                        <div class="p-4 bg-gray-50 border rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Adicionar Produto</h3>
+                        <div id="item-entry-form" class="space-y-3">
+                            <div>
+                            <label class="text-sm text-gray-600">Produto</label><select id="entry-produto-select" class="w-full p-2 border border-gray-300 rounded-md">
+                            </select>
                             </div>
-                            <button type="button" id="add-item-to-buy-btn" class="w-full mt-2 bg-green-600 text-white font-semibold py-2 rounded-md hover:bg-green-700"><i class="fa-solid fa-plus"></i> Adicionar à Compra</button>
-                        </div></div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                <label class="text-sm text-gray-600">Custo Unit. (R$)</label>
+                                <input type="text" id="entry-custo" readonly class="w-full p-2 bg-gray-200 border rounded-md">
+                                </div>
+                                <div>
+                                <label class="text-sm text-gray-600">Quantidade</label><input type="number" id="entry-quantidade" min="1" value="1" class="w-full p-2 border border-gray-300 rounded-md">
+                                </div>
+                            </div>
+                            <button type="button" id="add-item-to-buy-btn" class="w-full mt-2 bg-green-600 text-white font-semibold py-2 rounded-md hover:bg-green-700"><i class="fa-solid fa-plus">
+                            </i> Adicionar à Compra</button>
+                        </div>
+                        </div>
                         <hr class="my-6">
                         <div>
                             <h3 class="text-lg font-medium text-gray-800 mb-2">Itens na Compra</h3>
-                            <div id="itens-adicionados-container" class="bg-white p-2 rounded-lg border min-h-[50px]"><table class="w-full summary-table"><tbody id="itens-adicionados-tbody"></tbody></table></div>
+                            <div id="itens-adicionados-container" class="bg-white p-2 rounded-lg border min-h-[50px]"><table class="w-full summary-table">
+                            <tbody id="itens-adicionados-tbody">
+                            </tbody>
+                            </table>
+                            </div>
                         </div>
-                        <div class="flex justify-end items-center mt-4"><label class="text-lg font-bold text-gray-800 mr-4">GASTO TOTAL:</label><input type="text" id="compra-total-display" readonly class="w-40 text-right text-xl font-bold p-2 bg-gray-200 rounded-md" value="R$ 0,00"></div>
-                        <button type="submit" class="w-full mt-6 bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700"><i class="fa-solid fa-floppy-disk"></i> Finalizar e Registrar Compra</button>
+                        <div class="flex justify-end items-center mt-4">
+                        <label class="text-lg font-bold text-gray-800 mr-4">GASTO TOTAL:</label>
+                        <input type="text" id="compra-total-display" readonly class="w-40 text-right text-xl font-bold p-2 bg-gray-200 rounded-md" value="R$ 0,00">
+                        </div>
+                        <button type="submit" class="w-full mt-6 bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700">
+                        <i class="fa-solid fa-floppy-disk">
+                        </i> Finalizar e Registrar Compra</button>
                     </form>
                 `;
 
@@ -226,18 +307,24 @@
                 produtoSelect.innerHTML = '<option value="">Selecione um produto...</option>';
 
                 buscarProdutos().then(produtos => {
+
                     todosOsProdutos = produtos;
                     produtos.forEach(p => {
                         const textoOpcao = `${p.nomeProduto} (Estoque: ${p.quantidade})`;
                         const option = new Option(textoOpcao, p.id);
-                        
+
                         option.dataset.custo = p.valorCusto;
                         option.dataset.qtd = p.quantidade;
                         produtoSelect.appendChild(option);
-                    });
+
+                    }
+                    );
 
                     produtoSelect.addEventListener('change', handleProdutoSelection);
-                });
+
+                }
+                );
+
                 document.getElementById('add-item-to-buy-btn').addEventListener('click', handleAdicionarItem);
                 document.getElementById('form-compra-ativa').addEventListener('submit', handleFinalizarCompra);
                 renderItensAdicionados();
@@ -257,6 +344,7 @@
                     alert('Selecione um produto e uma quantidade válida.');
                     return;
                 }
+
                 const addButton = document.getElementById('add-item-to-buy-btn');
                 addButton.disabled = true;
                 addButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Adicionando...`;
@@ -273,19 +361,19 @@
 
                     await apiFetchDefaultResponse(`/compra/adicionar`, {
                         method: 'POST',
-                        body: JSON.stringify(itemParaEnviar), 
+                        body: JSON.stringify(itemParaEnviar),
                         headers: { Authorization: `Bearer ${token}` },
-                    });
+                    }
+                    );
 
                     const produtoSelecionado = todosOsProdutos.find(p => p.id === produtoId);
-                    
-                    // Atualiza a lista local de itens da compra atual
+
                     const itemExistente = itensDaCompraAtual.find(i => i.produtoId === produtoId);
                     if (itemExistente) {
                         itemExistente.quantidade += quantidade;
                         itemExistente.subtotal = itemExistente.quantidade * produtoSelecionado.valorCusto;
                     } else {
-                         itensDaCompraAtual.push({
+                        itensDaCompraAtual.push({
                             produtoId: produtoSelecionado.id,
                             produtoNome: produtoSelecionado.nomeProduto,
                             quantidade: quantidade,
@@ -293,10 +381,10 @@
                             subtotal: quantidade * produtoSelecionado.valorCusto
                         });
                     }
-                   
+
                     renderItensAdicionados();
                     atualizarTotalCompra();
-                    
+
                     select.value = "";
                     document.getElementById('entry-custo').value = "";
                     document.getElementById('entry-quantidade').value = "1";
@@ -318,7 +406,7 @@
                 } catch (error) {
                     console.error("Falha ao buscar produtos:", error);
                     alert("Não foi possível carregar a lista de produtos.");
-                    return []; 
+                    return [];
                 }
             }
 
@@ -344,14 +432,14 @@
             };
 
             const handleFinalizarCompra = async (e) => {
-                e.preventDefault(); 
+                e.preventDefault();
                 await fetchCompras();
                 itensDaCompraAtual = [];
                 compraAtivaId = null;
                 renderBotaoIniciarCompra();
                 showMessage(comprasMessage, 'A lista de compras foi atualizada.', 'sucesso');
             };
-            
+
             const fetchCompras = async () => {
                 try {
                     const token = localStorage.getItem('authToken');
@@ -390,21 +478,22 @@
                     const date = new Date(purchase.dataCompra + 'T00:00:00-03:00').toLocaleDateString('pt-BR');
                     console.log(purchase)
                     acc[date] = (acc[date] || 0) + purchase.totalCompra;
-                    
+
                     return acc;
                 }, {});
                 const sortedDates = Object.keys(purchasesByDate).sort((a, b) => new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-')));
-                
+
                 comprasChartInstance = new Chart(ctx, {
                     type: 'bar',
-                    data: { labels: sortedDates, datasets: [{
+                    data: {
+                        labels: sortedDates, datasets: [{
                             label: 'Gasto Total em Compras (R$)', data: sortedDates.map(date => purchasesByDate[date]),
                             backgroundColor: 'rgba(255, 159, 64, 0.7)', borderColor: 'rgba(255, 159, 64, 1)', borderWidth: 1
                         }]
                     }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
                 });
 
-                
+
             };
 
             renderBotaoIniciarCompra();
@@ -423,15 +512,16 @@
                 const btn = e.target.closest('.btn-excluir');
                 if (btn && confirm(`Excluir compra ID ${btn.dataset.id}?`)) {
                     try {
-                       await apiFetch(`/compra/${btn.dataset.id}`, { method: 'DELETE' });
-                       showMessage(comprasMessage, 'Compra excluída com sucesso!', 'sucesso');
-                       fetchCompras();
-                    } catch(error) { 
-                        showMessage(comprasMessage, `Erro: ${error.message}`, 'erro'); 
+                        await apiFetch(`/compra/${btn.dataset.id}`, { method: 'DELETE' });
+                        showMessage(comprasMessage, 'Compra excluída com sucesso!', 'sucesso');
+                        fetchCompras();
+                    } catch (error) {
+                        showMessage(comprasMessage, `Erro: ${error.message}`, 'erro');
                     }
                 }
             });
         });
     </script>
 </body>
+
 </html>
