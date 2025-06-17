@@ -160,8 +160,11 @@
                         btn.innerHTML = 'Iniciar Nova Venda';
                         return;
                     }
-                    const dataVenda = new Date(dataSelecionada).toISOString();
-                    console.log(dataVenda);
+                    const data = new Date(dataSelecionada);
+                    
+                    data.setDate(data.getDate() + 1);
+
+                    const dataVenda = data.toISOString();
                     const novaVenda = await apiFetch('/venda/vender', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
