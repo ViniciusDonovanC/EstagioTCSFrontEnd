@@ -50,26 +50,75 @@
                         </div>
                         <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition disabled:opacity-50">Entrar</button>
                     </form>`,
-                registerForm: `
-                    <form id="register-form">
-                        <div class="mb-4">
-                            <label for="register-email" class="block text-sm font-medium text-gray-700 mb-1">Login (Email)</label>
-                            <input type="email" id="register-email" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="seu.email@exemplo.com">
+                    registerForm: `
+                    <form id="register-form" class="space-y-6">
+                        
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                                <i class="fa-solid fa-hospital text-gray-500 mr-2"></i>
+                                Dados da Farmácia
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="register-farmacia-nome" class="block text-sm font-medium text-gray-700 mb-1">Nome da Farmácia</label>
+                                    <input type="text" id="register-farmacia-nome" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Farmácia Central">
+                                </div>
+                                <div>
+                                    <label for="register-farmacia-cnpj" class="block text-sm font-medium text-gray-700 mb-1">CNPJ</label>
+                                    <input type="text" id="register-farmacia-cnpj" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="00.000.000/0001-00">
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-4">
-                            <label for="register-senha" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-                            <input type="password" id="register-senha" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="••••••••">
+
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                                <i class="fa-solid fa-user-tie text-gray-500 mr-2"></i>
+                                Dados do Gerente/Responsável
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="mb-4">
+                                    <label for="register-nome" class="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
+                                    <input type="text" id="register-nome" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Seu nome completo">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="register-cpf" class="block text-sm font-medium text-gray-700 mb-1">CPF (será seu login)</label>
+                                    <input type="text" id="register-cpf" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="000.000.000-00">
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="register-idade" class="block text-sm font-medium text-gray-700 mb-1">Idade</label>
+                                        <input type="number" id="register-idade" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" min="18">
+                                    </div>
+                                    <div>
+                                        <label for="register-genero" class="block text-sm font-medium text-gray-700 mb-1">Gênero</label>
+                                        <select id="register-genero" required class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
+                                            <option value="">Selecione</option>
+                                            <option value="Feminino">Feminino</option>
+                                            <option value="Masculino">Masculino</option>
+                                            <option value="Outro">Outro</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="register-salario" class="block text-sm font-medium text-gray-700 mb-1">Salário Base (R$)</label>
+                                    <input type="number" id="register-salario" required step="0.01" value="0.00" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="register-senha" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                                    <input type="password" id="register-senha" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="••••••••">
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-6">
-                            <label for="register-acesso" class="block text-sm font-medium text-gray-700 mb-1">Função</label>
-                            <select id="register-acesso" required class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
-                                <option value="">Selecione uma função</option>
-                                <option value="GERENTE">Gerente</option>
-                                <option value="FUNCIONARIO">Funcionário</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition disabled:opacity-50">Cadastrar</button>
-                    </form>`
+
+                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition disabled:opacity-50">
+                            <i class="fa-solid fa-user-plus mr-2"></i>Cadastrar Farmácia e Gerente
+                        </button>
+                    </form>
+                `
             };
 
             const renderAuthForm = (tab = 'login') => {
@@ -115,15 +164,30 @@
                 }
 
                 if (form.id === 'register-form') {
-                    const email = document.getElementById('register-email').value.trim();
-                    const senha = document.getElementById('register-senha').value.trim();
-                    const acesso = document.getElementById('register-acesso').value;
+
+                    const formData = {
+                        nomeFarmacia: document.getElementById('register-farmacia-nome').value,
+                        cnpj: document.getElementById('register-farmacia-cnpj').value.trim(),
+                        nomeFuncionario: document.getElementById('register-nome').value,
+                        genero: document.getElementById('register-genero').value,
+                        idade: parseInt(document.getElementById('register-idade').value, 10),
+                        salarioBase: parseFloat(document.getElementById('register-salario').value),
+                        login: document.getElementById('register-cpf').value.trim(),
+                        senha: document.getElementById('register-senha').value.trim()
+                    };            
 
                     try {
+                        const token = localStorage.getItem('authToken');
+                        if (!token) {
+                            alert('Sessão expirada. Redirecionando para o login.');
+                            window.location.href = 'index.html';
+                            throw new Error('Token não encontrado.');
+                        }
                         const response = await fetch('http://localhost:8080/auth/register', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email, senha, acesso })
+                            body: JSON.stringify({ email, senha, acesso }),
+                            'Authorization': `Bearer ${token}`,
                         });
 
                         if (!response.ok) throw new Error('Erro ao cadastrar');
