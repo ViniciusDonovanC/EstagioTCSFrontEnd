@@ -107,7 +107,6 @@
                 }
             };
 
-            // Renderiza o formulário e popula o dropdown de setores
             const renderFormulario = async () => {
                 formContainer.innerHTML = `
                     <div class="mb-4"><label for="funcionario-nome" class="block text-sm font-medium">Nome Completo</label><input type="text" id="funcionario-nome" required class="w-full mt-1 p-2 border rounded"></div>
@@ -179,7 +178,6 @@
                 } catch(error) {}
             };
 
-            // Event listener para exclusão
             tabelaFuncionarios.addEventListener('click', async (e) => {
                 const btn = e.target.closest('.btn-excluir');
                 if (btn && confirm(`Tem certeza que deseja excluir o funcionário ID ${btn.dataset.id}?`)) {
@@ -187,11 +185,10 @@
                         await apiFetch(`/funcionario/${btn.dataset.id}`, { method: 'DELETE' });
                         showMessage(appMessage, 'Excluído com sucesso!', 'sucesso');
                         fetchFuncionarios();
-                    } catch(error) { /* Erro já tratado em apiFetch */ }
+                    } catch(error) {}
                 }
             });
-
-            // Inicialização da página
+            
             renderFormulario();
             fetchFuncionarios();
         });

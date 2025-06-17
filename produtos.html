@@ -101,8 +101,6 @@
                 setTimeout(() => element.classList.add('hidden'), 5000);
             };
 
-            // --- LÓGICA DE PRODUTOS ---
-
             const renderFormularioProduto = (produto = null) => {
                 editingProdutoId = produto ? produto.id : null;
                 const formTitle = produto ? 'Editar Produto' : 'Cadastrar Novo Produto';
@@ -147,26 +145,24 @@
                 const form = e.target;
                 const formData = new FormData(form);
                 const produtoData = {
-                    nomeProduto: formData.get('nome'),
+                    nome: formData.get('nome'),
                     valorCusto: parseFloat(formData.get('valorCusto')),
                     valorVenda: parseFloat(formData.get('valorVenda')),
+                    quantidade: 0
                 };
-
-                const method = editingProdutoId ? 'PUT' : 'POST';
-                const endpoint = editingProdutoId ? `/produtos/${editingProdutoId}` : '/produtos';
 
                 try {
                     const token = localStorage.getItem('authToken');
-                    await apiFetch(endpoint, {
-                        method: method,
+                    await apiFetch('/produtos/registro', {
+                        method: 'POST',
                         headers: { Authorization: `Bearer ${token}` },
                         body: JSON.stringify(produtoData)
-                    });
+                });
                     
                     showMessage(produtosMessage, `Produto ${editingProdutoId ? 'atualizado' : 'cadastrado'} com sucesso!`, 'sucesso');
                     form.reset();
-                    renderFormularioProduto(); // Volta para o formulário de cadastro
-                    fetchProdutos(); // Atualiza a tabela
+                    renderFormularioProduto();
+                    fetchProdutos();
                 } catch (error) {
                     showMessage(produtosMessage, `Erro: ${error.message}`, 'erro');
                 }
@@ -204,7 +200,6 @@
             
             tabelaProdutos.addEventListener('click', async (e) => {
                 const editBtn = e.target.closest('.btn-editar');
-                const deleteBtn = e.target.closest('.btn-excluir');
                 const token = localStorage.getItem('authToken');
 
                 if (deleteBtn) {
