@@ -59,132 +59,369 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const API_BASE_URL = 'http://localhost:8080';
+            const pages = document.querySelectorAll('.page');
+            const authFormsContainer = document.getElementById('auth-forms-container');
+            const authMessage = document.getElementById('auth-message');
             const appMessage = document.getElementById('app-message');
+
+            const templates = {
+                loginForm: `
+                    <form id="login-form">
+                        <div class="mb-4">
+                            <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Login (Email)</label>
+                            <input type="email" id="login-email" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none transition" placeholder="seu.email@exemplo.com">
+                        </div>
+                        <div class="mb-6">
+                            <label for="login-senha" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                            <input type="password" id="login-senha" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none transition" placeholder="••••••••">
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition disabled:opacity-50">Entrar</button>
+                    </form>`,
+                registerForm: `
+                    <form id="register-form">
+                        <div class="mb-4">
+                            <label for="register-email" class="block text-sm font-medium text-gray-700 mb-1">Login (Email)</label>
+                            <input type="email" id="register-email" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="seu.email@exemplo.com">
+                        </div>
+                        <div class="mb-4">
+                            <label for="register-senha" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                            <input type="password" id="register-senha" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="••••••••">
+                        </div>
+                        <div class="mb-6">
+                            <label for="register-acesso" class="block text-sm font-medium text-gray-700 mb-1">Função</label>
+                            <select id="register-acesso" required class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
+                                <option value="">Selecione uma função</option>
+                                <option value="GERENTE">Gerente</option>
+                                <option value="FUNCIONARIO">Funcionário</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition disabled:opacity-50">Cadastrar</button>
+                    </form>`,
+                transportadoraForm: `
+                    <div class="mb-4">
+                        <label for="transportadora-nome" class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                        <input type="text" id="transportadora-nome" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Nome da transportadora">
+                    </div>
+                    <div class="mb-4">
+                        <label for="transportadora-estados" class="block text-sm font-medium text-gray-700 mb-1">Estados Atendidos</label>
+                        <select id="transportadora-estados" multiple required class="w-full h-48 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Segure Ctrl (Windows/Linux) ou Cmd (Mac) para selecionar múltiplos estados</p>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition disabled:opacity-50">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar
+                    </button>`
+            };
             
-            // --- Dados e Simulação de API ---
-            let mockTransportadoras = [
-                { id: 1, nome: 'Transporte Rápido Ltda.', estadosCobertura: ['SP', 'MG', 'RJ'] },
-                { id: 2, nome: 'Entrega Veloz S/A', estadosCobertura: ['PR', 'SC', 'RS', 'SP'] },
-                { id: 3, nome: 'Logística Total', estadosCobertura: ['BA', 'PE', 'CE', 'MA'] },
-            ];
-            let nextTransportadoraId = 4;
-
-            const apiFetch = async (endpoint, options = {}) => {
-                console.log(`API Call (Simulated): ${options.method || 'GET'} ${endpoint}`);
-                await new Promise(resolve => setTimeout(resolve, 300));
-
-                if (endpoint === '/transportadoras' && (!options.method || options.method === 'GET')) {
-                    return [...mockTransportadoras];
+            const navigateTo = (pageId) => {
+                pages.forEach(p => {
+                    p.classList.remove('active');
+                    p.style.display = 'none';
+                });
+                
+                const targetPage = document.getElementById(`${pageId}-page`);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                    targetPage.style.display = 'block';
+                    
+                    if (pageId === 'transportadoras') {
+                        renderTransportadoraPage();
+                    }
+                } else {
+                    console.error(`Página ${pageId} não encontrada`);
                 }
-                if (endpoint === '/transportadoras/registro' && options.method === 'POST') {
-                    const newTransportadora = JSON.parse(options.body);
-                    newTransportadora.id = nextTransportadoraId++;
-                    mockTransportadoras.push(newTransportadora);
-                    return newTransportadora;
-                }
-                if (endpoint.startsWith('/transportadoras/') && options.method === 'DELETE') {
-                    const idToDelete = parseInt(endpoint.split('/').pop());
-                    mockTransportadoras = mockTransportadoras.filter(t => t.id !== idToDelete);
-                    return null;
-                }
-                throw new Error('Endpoint simulado não encontrado.');
             };
 
-            // --- Funções da Página ---
-            const formContainer = document.getElementById('form-adicionar-transportadora');
-            formContainer.innerHTML = `
-                <div class="mb-4">
-                    <label for="transportadora-nome" class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
-                    <input type="text" id="transportadora-nome" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Nome da transportadora">
-                </div>
-                <div class="mb-4">
-                    <label for="transportadora-estados" class="block text-sm font-medium text-gray-700 mb-1">Estados Atendidos</label>
-                    <select id="transportadora-estados" multiple required class="w-full h-48 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"></select>
-                    <p class="text-xs text-gray-500 mt-1">Segure Ctrl ou Cmd para selecionar múltiplos.</p>
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition disabled:opacity-50">
-                    <i class="fa-solid fa-floppy-disk"></i> Salvar
-                </button>`;
+            document.body.addEventListener('click', (e) => {
+                const routeTarget = e.target.closest('[data-route]');
+                if (routeTarget) {
+                    e.preventDefault();
+                    const route = routeTarget.dataset.route;
+                    const targetPage = document.getElementById(`${route}-page`);
+                    if (targetPage) {
+                         navigateTo(route);
+                    } else {
+                        alert(`Funcionalidade "${route}" ainda não implementada.`);
+                    }
+                }
 
-            const selectEstados = document.getElementById('transportadora-estados');
-            const estadosBrasileiros = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
-            estadosBrasileiros.forEach(sigla => {
-                selectEstados.add(new Option(sigla, sigla));
+                const tabTarget = e.target.closest('.tab-btn');
+                if (tabTarget) {
+                    const tab = tabTarget.dataset.tab;
+                    renderAuthForm(tab);
+                }
             });
-
-            const renderTabelaTransportadoras = (data) => {
-                const tabela = document.getElementById('tabela-transportadoras');
-                tabela.innerHTML = !data || data.length === 0 
-                    ? `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Nenhuma transportadora cadastrada.</td></tr>`
-                    : data.map(t => `
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 text-sm">${t.id}</td>
-                            <td class="px-6 py-4 text-sm font-medium">${t.nome}</td>
-                            <td class="px-6 py-4">
-                                <div class="flex flex-wrap gap-1">
-                                    ${t.estadosCobertura.map(e => `<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${e}</span>`).join(' ')}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <button class="btn-excluir text-red-600 hover:text-red-900 p-2 rounded" data-id="${t.id}" title="Excluir">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                            </td>
-                        </tr>`).join('');
+            
+            const renderAuthForm = (tab = 'login') => {
+                authFormsContainer.innerHTML = templates[`${tab}Form`];
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('text-green-600', 'border-green-600', 'border-b-2');
+                    btn.classList.add('text-gray-500');
+                });
+                const activeTab = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+                activeTab.classList.remove('text-gray-500');
+                activeTab.classList.add('text-green-600', 'border-green-600', 'border-b-2');
             };
             
+            authFormsContainer.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formId = e.target.id;
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                
+                if (formId === 'register-form') {
+                    const senha = document.getElementById('register-senha').value;
+                    if (senha.length < 6) {
+                        showMessage(authMessage, 'A senha deve ter pelo menos 6 caracteres.', 'erro');
+                        return;
+                    }
+                }
+                
+                submitButton.disabled = true;
+                submitButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processando...`;
+
+                try {
+                    if (formId === 'login-form') {
+                        const login = document.getElementById('login-email').value.trim();
+                        const senha = document.getElementById('login-senha').value;
+                        
+                        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                            method: 'POST', 
+                            headers: {'Content-Type': 'application/json'}, 
+                            body: JSON.stringify({login, senha})
+                        });
+                        
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(errorText || 'Credenciais inválidas.');
+                        }
+                        
+                        const data = await response.json();
+                        if (data.token) {
+                            window.authToken = data.token;
+                            navigateTo('dashboard');
+                        } else {
+                            throw new Error('Token não recebido.');
+                        }
+                    } else if (formId === 'register-form') {
+                        const login = document.getElementById('register-email').value.trim();
+                        const senha = document.getElementById('register-senha').value;
+                        const acesso = document.getElementById('register-acesso').value;
+                        
+                        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                            method: 'POST', 
+                            headers: {'Content-Type': 'application/json'}, 
+                            body: JSON.stringify({login, senha, acesso})
+                        });
+                        
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(errorText || 'Erro no cadastro. Verifique os dados.');
+                        }
+                        
+                        showMessage(authMessage, 'Cadastro realizado com sucesso! Faça o login.', 'sucesso');
+                        renderAuthForm('login');
+                    }
+                } catch (error) {
+                    console.error('Erro na autenticação:', error);
+                    showMessage(authMessage, error.message, 'erro');
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                }
+            });
+            
+            const logout = () => {
+                window.authToken = null;
+                navigateTo('auth');
+                renderAuthForm('login');
+            };
+            document.getElementById('logout-btn').addEventListener('click', logout);
+            
+            const apiFetch = async (endpoint, options = {}) => {
+                const token = window.authToken;
+                if (!token) { 
+                    logout(); 
+                    throw new Error('Sessão expirada. Faça login novamente.'); 
+                }
+                
+                const config = { 
+                    ...options, 
+                    headers: { 
+                        'Authorization': `Bearer ${token}`, 
+                        'Content-Type': 'application/json', 
+                        ...options.headers 
+                    } 
+                };
+                
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                
+                if (response.status === 401 || response.status === 403) { 
+                    logout(); 
+                    throw new Error('Sessão expirada ou acesso negado.'); 
+                }
+                
+                if (!response.ok) { 
+                    const errorText = await response.text();
+                    throw new Error(errorText || `Erro ${response.status}`); 
+                }
+                
+                return response.status === 204 ? null : response.json();
+            };
+            
+            const renderTransportadoraPage = () => {
+                const formContainer = document.getElementById('form-adicionar-transportadora');
+                formContainer.innerHTML = templates.transportadoraForm;
+                
+                const selectEstados = document.getElementById('transportadora-estados');
+                const estadosBrasileiros = [
+                    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 
+                    'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 
+                    'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+                ];
+                
+                estadosBrasileiros.forEach(sigla => {
+                    const option = document.createElement('option');
+                    option.value = sigla;
+                    option.textContent = sigla;
+                    selectEstados.appendChild(option);
+                });
+                
+                formContainer.addEventListener('submit', handleAddTransportadora);
+                document.getElementById('tabela-transportadoras').addEventListener('click', handleDeleteTransportadora);
+                
+                fetchTransportadoras();
+            };
+
             const fetchTransportadoras = async () => {
                 try {
                     const data = await apiFetch('/transportadoras');
                     renderTabelaTransportadoras(data);
                 } catch (error) {
+                    console.error('Erro ao buscar transportadoras:', error);
                     showMessage(appMessage, error.message, 'erro');
                 }
             };
             
-            const showMessage = (element, text, type = 'sucesso') => {
-                element.textContent = text;
-                element.className = `p-4 text-center rounded-md mx-4 my-2 ${type === 'sucesso' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
-                element.classList.remove('hidden');
-                setTimeout(() => element.classList.add('hidden'), 5000);
+            const renderTabelaTransportadoras = (data) => {
+                const tabela = document.getElementById('tabela-transportadoras');
+                tabela.innerHTML = '';
+                
+                if (!data || data.length === 0) {
+                     tabela.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Nenhuma transportadora cadastrada.</td></tr>`;
+                     return;
+                }
+                
+                data.forEach(t => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    
+                    const estadosHtml = t.estadosCobertura && t.estadosCobertura.length > 0 
+                        ? t.estadosCobertura.map(e => `<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">${e}</span>`).join(' ')
+                        : '<span class="text-gray-400">Nenhum estado</span>';
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4 text-sm">${t.id}</td>
+                        <td class="px-6 py-4 text-sm font-medium">${t.nome}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap gap-1">
+                                ${estadosHtml}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button class="btn-excluir text-red-600 hover:text-red-900 hover:bg-red-50 p-2 rounded transition" data-id="${t.id}" title="Excluir transportadora">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tabela.appendChild(row);
+                });
             };
 
-            formContainer.addEventListener('submit', async (e) => {
+            const handleAddTransportadora = async (e) => {
                 e.preventDefault();
+                
                 const nome = document.getElementById('transportadora-nome').value.trim();
-                const estados = Array.from(selectEstados.selectedOptions).map(o => o.value);
-                if (!nome || estados.length === 0) {
-                    showMessage(appMessage, 'Preencha todos os campos.', 'erro');
+                const estados = Array.from(document.getElementById('transportadora-estados').selectedOptions).map(o => o.value);
+                
+                if (!nome) {
+                    showMessage(appMessage, 'Nome da transportadora é obrigatório.', 'erro');
                     return;
                 }
+                
+                if (estados.length === 0) {
+                    showMessage(appMessage, 'Selecione pelo menos um estado.', 'erro');
+                    return;
+                }
+                
                 const submitButton = e.target.querySelector('button[type="submit"]');
+                const originalText = submitButton.innerHTML;
                 submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+                
                 try {
-                    await apiFetch('/transportadoras/registro', { method: 'POST', body: JSON.stringify({ nome, estadosCobertura: estados }) });
-                    showMessage(appMessage, 'Transportadora salva!', 'sucesso');
+                    await apiFetch('/transportadoras/registro', { 
+                        method: 'POST', 
+                        body: JSON.stringify({ nome, estadosAtendidos: estados }) 
+                    });
+                    showMessage(appMessage, 'Transportadora salva com sucesso!', 'sucesso');
                     e.target.reset();
                     fetchTransportadoras();
                 } catch(error) { 
+                    console.error('Erro ao salvar transportadora:', error);
                     showMessage(appMessage, `Erro: ${error.message}`, 'erro'); 
                 } finally {
                     submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
                 }
-            });
+            };
 
-            document.getElementById('tabela-transportadoras').addEventListener('click', async (e) => {
+            const handleDeleteTransportadora = async (e) => {
                 const btn = e.target.closest('.btn-excluir');
-                if (btn && confirm(`Excluir transportadora ID ${btn.dataset.id}?`)) {
-                    try {
-                       await apiFetch(`/transportadoras/${btn.dataset.id}`, { method: 'DELETE' });
-                       showMessage(appMessage, 'Excluída com sucesso!', 'sucesso');
-                       fetchTransportadoras();
-                    } catch(error) { 
-                        showMessage(appMessage, `Erro: ${error.message}`, 'erro'); 
+                if (btn) {
+                    const id = btn.dataset.id;
+                    if (confirm(`Tem certeza que deseja excluir a transportadora ID ${id}?`)) {
+                        try {
+                           await apiFetch(`/transportadoras/${id}`, { method: 'DELETE' });
+                           showMessage(appMessage, 'Transportadora excluída com sucesso!', 'sucesso');
+                           fetchTransportadoras();
+                        } catch(error) { 
+                            console.error('Erro ao excluir transportadora:', error);
+                            showMessage(appMessage, `Erro: ${error.message}`, 'erro'); 
+                        }
                     }
                 }
-            });
+            };
 
-            fetchTransportadoras(); // Carga inicial
+            function showMessage(element, text, type = 'sucesso') {
+                element.textContent = text;
+                element.className = `p-4 text-center rounded-md mx-4 my-2 ${type === 'sucesso' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`;
+                element.classList.remove('hidden');
+                setTimeout(() => {
+                    element.classList.add('hidden');
+                    element.textContent = '';
+                    element.className = 'p-4 text-center hidden';
+                }, 5000);
+            }
+
+            const initializeApp = () => {
+                pages.forEach(p => {
+                    p.classList.remove('active');
+                    p.style.display = 'none';
+                });
+                
+                if (window.authToken) {
+                    navigateTo('dashboard');
+                } else {
+                    navigateTo('auth');
+                    renderAuthForm('login');
+                }
+            };
+            
+
+            initializeApp();
         });
     </script>
 </body>
