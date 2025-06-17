@@ -70,9 +70,19 @@
             let nextTransportadoraId = 4;
 
             async function apiFetch(endpoint, options = {}) {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    alert('Sessão expirada ou não iniciada. Redirecionando para o login.');
+                    window.location.href = 'index.html';
+                    throw new Error('Token não encontrado.');
+                }
                 const config = {
                     method: options.method || 'GET',
-                    headers: { 'Content-Type': 'application/json', ...options.headers },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`, 
+                        ...options.headers,
+                    },
                 };
                 if (options.body) config.body = options.body;
                 try {
@@ -91,9 +101,19 @@
             }
             
             async function apiFetchDefaultResponse(endpoint, options = {}) {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    alert('Sessão expirada ou não iniciada. Redirecionando para o login.');
+                    window.location.href = 'index.html';
+                    throw new Error('Token não encontrado.');
+                }
                 const config = {
                     method: options.method || 'GET',
-                    headers: { 'Content-Type': 'application/json', ...options.headers, },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`, 
+                        ...options.headers,
+                    },
                 };
                 if (options.body) config.body = options.body;
                 try {

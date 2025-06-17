@@ -72,7 +72,6 @@
 
             // Função para fazer requisições à API, agora com autenticação real
             const apiFetch = async (endpoint, options = {}) => {
-                // CORREÇÃO: Pega o token salvo no localStorage (pela página de login)
                 const token = localStorage.getItem('authToken');
                 if (!token) {
                     alert('Sessão expirada ou não iniciada. Redirecionando para o login.');
