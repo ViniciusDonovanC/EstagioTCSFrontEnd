@@ -198,7 +198,8 @@
                 const submitButton = e.target.querySelector('button[type="submit"]');
                 submitButton.disabled = true;
                 try {
-                    await apiFetchDefaultResponse('/transportadoras/registro', { method: 'POST', body: JSON.stringify({ nome, estadosCobertura: estados }) });
+                    console.log(nome, estados)
+                    await apiFetchDefaultResponse('/transportadoras/registro', { method: 'POST', body: JSON.stringify({ nome, estadosAtendidos: estados }) });
                     showMessage(appMessage, 'Transportadora salva!', 'sucesso');
                     e.target.reset();
                     fetchTransportadoras();
