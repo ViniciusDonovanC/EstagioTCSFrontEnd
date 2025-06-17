@@ -358,7 +358,7 @@
                 const salesByDate = data.reduce((acc, sale) => {
                     const date = new Date(sale.dataVenda).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
                     
-                    acc[date] = (acc[date] || 0) + sale.totalVenda;
+                    acc[date] = (acc[date] || 0) + sale.totalCompra;
                     return acc;
                 }, {});
                 const sortedDates = Object.keys(salesByDate).sort((a, b) => {
