@@ -296,16 +296,22 @@
                         <tr class="border-b border-gray-200 last:border-b-0">
                             <td class="font-medium text-gray-700 py-2 px-2">${item.produtoNome}</td>
                             <td class="text-gray-600 py-2 px-2">x ${item.quantidade}</td>
-                            <td class="text-right py-2 px-2">${item.precoUnitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                            <td class="font-semibold text-right py-2 px-2">${item.subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                            
+                            /* CORRIGIDO AQUI */
+                            <td class="text-right py-2 px-2">${parseFloat(item.precoUnitario).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                            
+                            /* E AQUI */
+                            <td class="font-semibold text-right py-2 px-2">${parseFloat(item.subtotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                         </tr>`).join('');
-            };
+            };                  
 
             const atualizarTotalVenda = () => {
                 const totalDisplay = document.getElementById('venda-total-display');
                 if (!totalDisplay) return;
                 const totalGeral = itensDaVendaAtual.reduce((acc, item) => acc + item.subtotal, 0);
-                totalDisplay.value = totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+                /* CORRIGIDO AQUI */
+                totalDisplay.value = parseFloat(totalGeral).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             };
 
             const handleFinalizarVenda = async (e) => {
@@ -345,9 +351,11 @@
                             <td class="px-6 py-4 text-sm">${venda.idVenda}</td>
                             <td class="px-6 py-4 text-sm font-medium">${venda.nomeFuncionario}</td>
                             <td class="px-6 py-4 text-sm">${new Date(venda.dataVenda + 'T00:00:00-03:00').toLocaleDateString('pt-BR')}</td>
-                            <td class="px-6 py-4 text-sm font-semibold">${venda.totalVenda.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+
+                            /* CORRIGIDO AQUI */
+                            <td class="px-6 py-4 text-sm font-semibold">${parseFloat(venda.totalVenda).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                         </tr>`).join('');
-            };
+            };              
 
             const renderVendasChart = (data) => {
                 if (vendasChartInstance) vendasChartInstance.destroy();
