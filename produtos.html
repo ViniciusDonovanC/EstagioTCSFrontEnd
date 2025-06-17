@@ -145,7 +145,7 @@
                 const form = e.target;
                 const formData = new FormData(form);
                 const produtoData = {
-                    nome: formData.get('nome'),
+                    nomeProduto: formData.get('nome'),
                     valorCusto: parseFloat(formData.get('valorCusto')),
                     valorVenda: parseFloat(formData.get('valorVenda')),
                     quantidade: 0
