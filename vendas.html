@@ -216,6 +216,8 @@
                     produtos
                         .filter(p => p.quantidade > 0)
                         .forEach(p => {
+                            console.log(p)
+                            console.log(p.valorVenda)
                             const textoOpcao = `${p.nomeProduto} (Estoque: ${p.quantidade})`;
                             const option = new Option(textoOpcao, p.id);
                             option.dataset.preco = p.valorVenda; 
@@ -266,7 +268,7 @@
                             produtoId: produtoSelecionado.id,
                             produtoNome: produtoSelecionado.nomeProduto,
                             quantidade: quantidade,
-                            precoUnitario: produtoSelecionado.valorVenda, // Usando valorVenda
+                            precoUnitario: produtoSelecionado.valorVenda, 
                             subtotal: quantidade * produtoSelecionado.valorVenda
                         });
                     }
@@ -315,7 +317,6 @@
                 if (!totalDisplay) return;
                 const totalGeral = itensDaVendaAtual.reduce((acc, item) => acc + item.subtotal, 0);
 
-                /* CORRIGIDO AQUI */
                 totalDisplay.value = parseFloat(totalGeral).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             };
 
