@@ -392,6 +392,7 @@
                 const ctx = document.getElementById('compras-chart').getContext('2d');
                 const purchasesByDate = data.reduce((acc, purchase) => {
                     const date = new Date(purchase.dataCompra + 'T00:00:00-03:00').toLocaleDateString('pt-BR');
+                    console.log(purchase)
                     acc[date] = (acc[date] || 0) + purchase.totalCompra;
                     
                     return acc;
