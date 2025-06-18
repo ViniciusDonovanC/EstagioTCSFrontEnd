@@ -303,7 +303,7 @@
                             headers: { Authorization: `Bearer ${token}` } 
                         });
 
-                        console.log(responseData.caixa);
+                        console.log(responseData);
 
                         if (responseData && typeof responseData.caixa !== 'undefined') {
                             const valorFormatado = responseData.caixa.toLocaleString('pt-BR', { 
