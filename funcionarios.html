@@ -148,7 +148,6 @@
     
             const renderFormulario = () => {
                 formFuncionario.innerHTML = `
-                    <h2 id="form-title" class="text-xl font-semibold mb-4 border-b pb-3"><i class="fa-solid fa-user-plus text-green-500"></i> Novo Funcionário</h2>
                     
                     <input type="hidden" id="funcionario-id">
     
@@ -236,7 +235,7 @@
     
             const editaMode = async (id) => {
                 try {
-                    const funcionario = await apiFetch(`/funcionario/buscar/${id}`); 
+                    const funcionario = await apiFetch(`/funcionario/${id}`); 
     
                     document.getElementById('funcionario-id').value = funcionario.id;
                     document.getElementById('funcionario-nome').value = funcionario.nomeCompleto;
