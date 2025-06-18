@@ -87,7 +87,7 @@
             const vendasChartView = document.getElementById('vendas-chart-view');
             const salesViewOptions = document.getElementById('sales-view-options');
             const viewButtons = salesViewOptions.querySelectorAll('.view-btn');
-            let currentSaleFilter = 'realizadas';
+            let vendaAtual = 'realizadas';
 
             const API_BASE_URL = 'http://localhost:8080';
             
@@ -124,7 +124,7 @@
                     method: options.method || 'GET',
                     headers: { 'Content-Type': 'application/json', ...options.headers, },
                 }
-                if (options.body) { config.body = options.body; }
+                if (options.body)config.body = options.body;
                 try {
                     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
                     if (!response.ok) {
@@ -223,7 +223,7 @@
                 `;
 
                 const produtoSelect = document.getElementById('entry-produto-select');
-                produtoSelect.innerHTML = '<option value="">Selecione um produto...</option>';
+                produtoSelect.innerHTML = '<option value="">Selecione um produto</option>';
 
                 buscarProdutos().then(produtos => {
                     todosOsProdutos = produtos;
@@ -253,8 +253,17 @@
                 const select = document.getElementById('entry-produto-select');
                 const produtoId = parseInt(select.value, 10);
                 const quantidade = parseInt(document.getElementById('entry-quantidade').value, 10);
-                if (!produtoId || isNaN(quantidade) || quantidade < 1) {
-                    alert('Selecione um produto e uma quantidade válida.'); return;
+
+                const selectedOption = select.options[select.selectedIndex]; //TODO verificar aqui
+                const quantidadeEmEstoque = selectedOption.dataset.qtd;
+
+                if(quantidade>quantidadeEmEstoque){
+                    alert('Você não tem estoque suficiente.'); 
+                    return;
+                }
+                if(!produtoId || isNaN(quantidade) || quantidade < 1) {
+                    alert('Selecione um produto e uma quantidade válida.'); 
+                    return;
                 }
 
                 const addButton = document.getElementById('add-item-to-sell-btn');
@@ -334,14 +343,14 @@
 
             const handleFinalizarVenda = async (e) => {
                 e.preventDefault(); 
-                await fetchVendas(currentSaleFilter);
+                await fetchVendas(vendaAtual);
                 itensDaVendaAtual = [];
                 vendaAtivaId = null;
                 renderBotaoIniciarVenda();
                 showMessage(vendasMessage, 'A lista de vendas foi atualizada.', 'sucesso');
             }
             
-            const fetchVendas = async (currentSaleFilter) => {
+            const fetchVendas = async (vendaAtual) => {
                 try {
                     const token = localStorage.getItem('authToken');
                     const data = await apiFetch('/venda/listar', {
@@ -351,7 +360,7 @@
 
                     todasAsVendas = data || []; 
 
-                    renderFilteredVendas(currentSaleFilter);
+                    renderFilteredVendas(vendaAtual);
                 } catch (error) {
                     showMessage(vendasMessage, error.message, 'erro');
                 }
@@ -432,7 +441,7 @@
             }
 
             renderBotaoIniciarVenda();
-            fetchVendas(currentSaleFilter);
+            fetchVendas(vendaAtual);
 
             toggleViewBtnVendas.addEventListener('click', () => {
                 const isList = currentVendasView === 'list';
@@ -440,23 +449,23 @@
                 vendasChartView.classList.toggle('hidden', !isList);
                 toggleViewBtnVendas.innerHTML = isList ? '<i class="fa-solid fa-list"></i> Ver Lista' : '<i class="fa-solid fa-chart-bar"></i> Ver Gráfico';
                 currentVendasView = isList ? 'chart' : 'list';
-                if (currentVendasView === 'chart') fetchVendas(currentSaleFilter);
+                if (currentVendasView === 'chart') fetchVendas(vendaAtual);
             });
 
             salesViewOptions.addEventListener('click', (e) => {
-                const clickedButton = e.target.closest('.view-btn');
-                if (!clickedButton) return;
-                const selectedView = clickedButton.dataset.view;
-                if (selectedView === currentSaleFilter) return;
-                currentSaleFilter = selectedView;
+                const clickedButton = e.target.closest('.view-btn')
+                if(!clickedButton) return
+                const selectedView = clickedButton.dataset.view
+                if(selectedView === vendaAtual) return
+                vendaAtual = selectedView;
                 viewButtons.forEach(button => {
-                    const isSelected = button.dataset.view === currentSaleFilter;
+                    const isSelected = button.dataset.view === vendaAtual;
                     button.classList.toggle('bg-blue-600', isSelected);
                     button.classList.toggle('text-white', isSelected);
                     button.classList.toggle('bg-white', !isSelected);
                     button.classList.toggle('text-gray-900', !isSelected);
                 });
-                fetchVendas(currentSaleFilter);
+                fetchVendas(vendaAtual);
             });
         });
     </script>
