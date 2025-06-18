@@ -331,10 +331,10 @@
                     if (filter === 'atual') {
                         lucrosMensaisFiltrados = todosLucrosMensais.filter(item => {
                             const dataItem = new Date(item.ano, item.mes - 1);
-                            return dataItem <= hoje;
+                            return dataItem < hoje;
                         });
 
-                        lucrosAnuaisFiltrados = todosLucrosAnuais.filter(item => item.ano <= anoAtual);
+                        lucrosAnuaisFiltrados = todosLucrosAnuais.filter(item => item.ano < anoAtual);
 
                     } else {
                         lucrosMensaisFiltrados = todosLucrosMensais.filter(item => {
