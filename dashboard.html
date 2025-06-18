@@ -138,9 +138,10 @@
                     method: options.method || 'GET',
                     headers: { 'Content-Type': 'application/json', ...options.headers },
                 }
-                if (options.body) { config.body = options.body; }
+                if (options.body) config.body = options.body;
                 try {
                     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    console.log("response: " + response)
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({ message: response.statusText }));
                         throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
