@@ -252,14 +252,14 @@
                 const fetchLucros = async () => {
                     try {
                         const token = localStorage.getItem('authToken');
-
-                        console.log(token)
                         
                         const lucroMensalData = await apiFetch('/farmacia/mensal', { headers: { Authorization: `Bearer ${token}` } });
                         todosLucrosMensais = lucroMensalData || [];
+                        console.log(todosLucrosMensais)
 
                         const lucroAnualData = await apiFetch('/farmacia/anual', { headers: { Authorization: `Bearer ${token}` } });
                         todosLucrosAnuais = lucroAnualData || [];
+                        console.log(todosLucrosAnuais)
 
                         renderLucrosFiltrados(valorCaixaDisplay);
 
