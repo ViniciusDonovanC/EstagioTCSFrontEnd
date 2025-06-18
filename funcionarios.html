@@ -221,7 +221,7 @@
     
                 try {
                     if (estaEditando) {
-                        await apiFetchDefaultResponse(`/funcionario/atualizar/${id}`, { method: 'PUT', body: formData });
+                        await apiFetchDefaultResponse(`/funcionario/${id}`, { method: 'PUT', body: formData });
                         showMessage(appMessage, 'Funcionário atualizado com sucesso!', 'sucesso');
                     } else {
                         await apiFetchDefaultResponse('/funcionario/adicionar', { method: 'POST', body: formData });
