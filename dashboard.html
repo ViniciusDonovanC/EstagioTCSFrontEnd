@@ -301,6 +301,8 @@
                             headers: { Authorization: `Bearer ${token}` } 
                         });
 
+                        console.log("respomse data " + responseData);
+
                         if (responseData && typeof responseData.valor !== 'undefined') {
                             const valorFormatado = responseData.caixa.toLocaleString('pt-BR', { 
                                 style: 'currency', 
