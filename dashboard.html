@@ -261,7 +261,7 @@
                         todosLucrosAnuais = lucroAnualData || [];
                         console.log(todosLucrosAnuais)
 
-                        renderLucrosFiltrados(valorCaixaDisplay);
+                        renderLucrosFiltrados(lucroAtual);
 
                     } catch (error) {
                         console.error("Erro ao buscar relatórios de lucro:", error);
@@ -365,6 +365,7 @@
                     fetchLucros(lucroAtual);
                 });
                 fetchLucros(lucroAtual);
+                fetchValorCaixa();
             });
     </script>
 </body>
