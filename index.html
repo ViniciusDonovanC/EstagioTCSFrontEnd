@@ -8,9 +8,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .page-content { animation: fadeIn 0.4s ease-in-out; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+        }
+
+        @keyframes fadeIn { 
+            from { 
+                opacity: 0; transform: translateY(-10px); 
+            } 
+            to { 
+                opacity: 1; transform: translateY(0); 
+            } 
+        }
+
+        .page-content { 
+            animation: fadeIn 0.4s ease-in-out; 
+        }
+
     </style>
 </head>
 <body class="text-gray-800">
@@ -36,6 +51,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const authFormsContainer = document.getElementById('auth-forms-container');
+            const url = 'http://localhost:8080';
             
             const templates = {
                 loginForm: `
@@ -143,7 +159,7 @@
                     const senha = document.getElementById('login-senha').value.trim();
 
                     try {
-                        const response = await fetch('http://localhost:8080/auth/login', {
+                        const response = await fetch(`${url}/auth/login`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ login, senha })
@@ -187,7 +203,7 @@
                             window.location.href = 'index.html';
                             return
                         }
-                        const response = await fetch('http://localhost:8080/auth/register', {
+                        const response = await fetch(`${url}/auth/register`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -204,7 +220,7 @@
                         renderAuthForm('login');
 
                     }catch (err){
-                        authMessage.textContent = 'Erro no cadastro';
+                        authMessage.textContent = 'Erro ao cadastrar';
                         authMessage.classList.add('text-red-500');
                     }
                 }

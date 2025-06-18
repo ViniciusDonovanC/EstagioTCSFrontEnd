@@ -9,10 +9,28 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .page-content { animation: fadeIn 0.4s ease-in-out; }
-        .dashboard-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+        }
+
+        @keyframes fadeIn { 
+            from { 
+                opacity: 0; transform: translateY(-10px); 
+            } 
+            to { 
+                opacity: 1; transform: translateY(0); 
+            } 
+        }
+
+        .page-content { 
+            animation: fadeIn 0.4s ease-in-out; 
+        }
+
+        .dashboard-card { 
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; 
+        }
+
         .dashboard-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -120,11 +138,11 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const API_BASE_URL = 'http://localhost:8080';
+            const url = 'http://localhost:8080';
             let charLucroMensal = null;
             let chartLucroAnual = null;
             const lucrosViewsOption = document.getElementById('lucros-view-options');
-            const viewButtons = lucrosViewsOption.querySelectorAll('.view-btn');
+            const btns = lucrosViewsOption.querySelectorAll('.view-btn');
             const valorCaixaDisplay = document.getElementById('valor-caixa-display');
             let lucroAtual = 'atual';
 
@@ -140,7 +158,7 @@
                 }
                 if (options.body) config.body = options.body;
                 try {
-                    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    const response = await fetch(`${url}${endpoint}`, config);
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({ message: response.statusText }));
                         throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
@@ -154,14 +172,6 @@
                 }
             }
 
-            /**
-             * O que o Backend precisa retornar para esta função:
-             * Um array de objetos, ex:
-             * [
-             * { "ano": 2025, "mes": 5, "lucro": 4500.50 },
-             * { "ano": 2025, "mes": 6, "lucro": 7800.00 }
-             * ]
-             */
             const renderLucroMensalChart = (data) => {
                 if (charLucroMensal) charLucroMensal.destroy();
                     const ctx = document.getElementById('lucro-mensal-chart').getContext('2d');
@@ -213,14 +223,6 @@
                     });
                 };
 
-                /**
-                 * O que o Backend precisa retornar para esta função:
-                 * Um array de objetos, ex:
-                 * [
-                 * { "ano": 2024, "lucro": 55000.00 },
-                 * { "ano": 2025, "lucro": 98000.00 }
-                 * ]
-                 */
                 const renderLucroAnualChart = (data) => {
                     if (chartLucroAnual) chartLucroAnual.destroy();
                     const ctx = document.getElementById('lucro-anual-chart').getContext('2d');
@@ -268,33 +270,6 @@
                         alert("Não foi possível carregar os dados de lucratividade.");
                     }
                 };
-
-                // const fetchLucros = async () => {
-                //     console.log("Carregando dados FALSOS (mock) para os lucros...");
-
-                //     // 1. Dados falsos para o lucro MENSAL (com dados passados e futuros)
-                //     todosLucrosMensais = [
-                //         { ano: 2025, mes: 3, lucro: 4580.75 }, // Passado
-                //         { ano: 2025, mes: 4, lucro: 6250.30 }, // Passado
-                //         { ano: 2025, mes: 5, lucro: 5100.00 }, // Passado
-                //         { ano: 2025, mes: 6, lucro: 8945.50 }, // Mês atual (17 de Junho de 2025)
-                //         // --- Dados Futuros Adicionados para Teste ---
-                //         { ano: 2025, mes: 7, lucro: 9500.00 },
-                //         { ano: 2025, mes: 8, lucro: 9800.00 } 
-                //     ];
-
-                //     // 2. Dados falsos para o lucro ANUAL (com dados passados e futuros)
-                //     todosLucrosAnuais = [
-                //         { ano: 2023, lucro: 75430.80 }, // Passado
-                //         { ano: 2024, lucro: 98210.25 }, // Passado
-                //         { ano: 2025, lucro: 24876.55 }, // Ano atual
-                //         // --- Dados Futuros Adicionados para Teste ---
-                //         { ano: 2026, lucro: 115000.00 } // Futuro
-                //     ];
-
-                //     // 3. AGORA, chama a função de filtragem, passando o filtro inicial ('atual')
-                //     renderLucrosFiltrados(lucroAtual);
-                // };
 
                 const fetchValorCaixa = async () => {
                     try {
@@ -355,7 +330,7 @@
                     const selectedView = clickedButton.dataset.view
                     if(selectedView === lucroAtual) return
                     lucroAtual = selectedView;
-                    viewButtons.forEach(button => {
+                    btns.forEach(button => {
                         const isSelected = button.dataset.view === lucroAtual;
                         button.classList.toggle('bg-blue-600', isSelected);
                         button.classList.toggle('text-white', isSelected);

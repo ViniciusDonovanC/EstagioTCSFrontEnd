@@ -8,9 +8,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .page-content { animation: fadeIn 0.4s ease-in-out; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+        }
+
+        @keyframes fadeIn { 
+            from { 
+                opacity: 0; transform: translateY(-10px); 
+            } 
+            to { 
+                opacity: 1; transform: translateY(0); 
+            } 
+        }
+
+        .page-content { 
+            animation: fadeIn 0.4s ease-in-out; 
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -60,14 +74,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const appMessage = document.getElementById('app-message');
-            const API_BASE_URL = 'http://localhost:8080';
-            
-            let mockTransportadoras = [
-                { id: 1, nome: 'Transporte Rápido Ltda.', estadosCobertura: ['SP', 'MG', 'RJ'] },
-                { id: 2, nome: 'Entrega Veloz S/A', estadosCobertura: ['PR', 'SC', 'RS', 'SP'] },
-                { id: 3, nome: 'Logística Total', estadosCobertura: ['BA', 'PE', 'CE', 'MA'] },
-            ];
-            let nextTransportadoraId = 4;
+            const url = 'http://localhost:8080';
 
             async function apiFetch(endpoint, options = {}) {
                 const token = localStorage.getItem('authToken');
@@ -86,7 +93,7 @@
                 };
                 if (options.body) config.body = options.body;
                 try {
-                    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    const response = await fetch(`${url}${endpoint}`, config);
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({ message: response.statusText }));
                         throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
@@ -117,7 +124,7 @@
                 };
                 if (options.body) config.body = options.body;
                 try {
-                    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    const response = await fetch(`${url}${endpoint}`, config);
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({ message: response.statusText }));
                         throw new Error(errorData.message || `Erro na requisição: ${response.status}`);

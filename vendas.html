@@ -9,12 +9,40 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .page-content { animation: fadeIn 0.4s ease-in-out; }
-        #vendas-chart-view { min-height: 400px; display: flex; align-items: center; justify-content: center; padding-bottom: 20px; }
-        #vendas-chart { max-height: 100%; width: 100%; }
-        .summary-table th, .summary-table td { padding: 0.75rem 1rem; text-align: left; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+        }
+
+        @keyframes fadeIn { 
+            from { 
+                opacity: 0; transform: translateY(-10px); 
+            } 
+            to { 
+                opacity: 1; transform: translateY(0); 
+            } 
+        }
+
+        .page-content { 
+            animation: fadeIn 0.4s ease-in-out; 
+        }
+
+        #vendas-chart-view { 
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 20px;
+        }
+
+        #vendas-chart { max-height: 100%;
+            width: 100%;
+        }
+
+        .summary-table th, .summary-table td { padding: 0.75rem 1rem;
+            text-align: left;
+        }
+
     </style>
 </head>
 <body class="text-gray-800">
@@ -89,7 +117,7 @@
             const viewButtons = salesViewOptions.querySelectorAll('.view-btn');
             let vendaAtual = 'realizadas';
 
-            const API_BASE_URL = 'http://localhost:8080';
+            const url = 'http://localhost:8080';
             
             let itensDaVendaAtual = [];
             let vendaAtivaId = null;
@@ -105,7 +133,7 @@
                 }
                 if (options.body) { config.body = options.body; }
                 try {
-                    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    const response = await fetch(`${url}${endpoint}`, config);
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({ message: response.statusText }));
                         throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
@@ -126,7 +154,7 @@
                 }
                 if (options.body)config.body = options.body;
                 try {
-                    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    const response = await fetch(`${url}${endpoint}`, config);
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({ message: response.statusText }));
                         throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
@@ -154,7 +182,8 @@
                             <label for="entry-data-venda" class="text-sm text-gray-600">Data da Venda</label>
                             <input type="date" id="entry-data-venda" class="w-full p-2 border border-gray-300 rounded-md">
                         </div>
-                        <button id="iniciar-venda-btn" class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 shadow-lg hover:shadow-xl transition-all">
+                        
+                        <button id="iniciar-venda-btn" class="w-full mt-6 bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 shadow-lg hover:shadow-xl transition-all">
                             <i class="fa-solid fa-cart-plus mr-2"></i> Iniciar Nova Venda
                         </button>
                     </div>

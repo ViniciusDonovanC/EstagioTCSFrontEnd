@@ -123,7 +123,7 @@
             const comprasListView = document.getElementById('compras-list-view');
             const comprasChartView = document.getElementById('compras-chart-view');
 
-            const API_BASE_URL = 'http://localhost:8080';
+            const url = 'http://localhost:8080';
 
             let itensDaCompraAtual = [];
             let compraAtivaId = null;
@@ -149,7 +149,7 @@
                 }
 
                 try {
-                    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    const response = await fetch(`${url}${endpoint}`, config);
 
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({ message: response.statusText }));
@@ -183,7 +183,7 @@
                 }
 
                 try {
-                    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    const response = await fetch(`${url}${endpoint}`, config);
 
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({ message: response.statusText }));
