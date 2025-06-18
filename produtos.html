@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos - Sistema de Farmácia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .page-content { animation: fadeIn 0.4s ease-in-out; }
+        .form-label { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; color: #4b5563; }
+        .form-input { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; }
+        .btn-actions button { margin-left: 0.5rem; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="page-content">
+        <nav class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="text-xl font-bold text-gray-800"><i class="fa-solid fa-boxes-stacked text-green-500"></i> Gerenciar Produtos</div>
+                <a href="dashboard.html" class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition">
+                    <i class="fa-solid fa-arrow-left"></i> Voltar ao Início
+                </a>
+            </div>
+        </nav>
+        
+        <div class="container mx-auto p-4 md:p-8">
+            <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <div class="lg:col-span-1 space-y-6">
+                    <div id="form-produto-container" class="bg-white p-6 rounded-lg shadow-md">
+                        </div>
+                </div>
+
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow-md">
+                        <div class="p-6 border-b">
+                            <h2 class="text-xl font-semibold"><i class="fa-solid fa-list-ul text-purple-500"></i> Produtos Cadastrados</h2>
+                        </div>
+                        <div id="produtos-message" class="p-4 text-center hidden"></div>
+                        <div class="overflow-x-auto p-4">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Custo</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Venda</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estoque</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-produtos" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const formProdutoContainer = document.getElementById('form-produto-container');
+            const produtosMessage = document.getElementById('produtos-message');
+            const tabelaProdutos = document.getElementById('tabela-produtos');
+
+            const url = 'http://localhost:8080';
+            let editingProdutoId = null; 
+
+            async function apiFetch(endpoint, options = {}) {
+                const config = {
+                    method: options.method || 'GET',
+                    headers: { 'Content-Type': 'application/json', ...options.headers },
+                };
+                if (options.body) config.body = options.body;
+
+                try {
+                    const response = await fetch(`${url}${endpoint}`, config);
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                        throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
+                    }
+                    return response.status === 204 ? null : response.json();
+                } catch (error) {
+                    console.error(`Erro na chamada da API para ${endpoint}:`, error);
+                    alert(`Erro de comunicação com o servidor: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            async function apiFetchDefaultResponse(endpoint, options = {}) {
+                const config = {
+                    method: options.method || 'POST',
+                    headers: { 'Content-Type': 'application/json', ...options.headers, },
+                };
+                if (options.body)config.body = options.body
+                try {
+                    const response = await fetch(`${url}${endpoint}`, config);
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                        throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error(`Erro na chamada da API para ${endpoint}:`, error);
+                    alert(`Erro de comunicação com o servidor: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            const showMessage = (element, text, type = 'sucesso') => {
+                element.textContent = text;
+                element.className = `p-4 text-center rounded-md mx-4 my-2 ${type === 'sucesso' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+                element.classList.remove('hidden');
+                setTimeout(() => element.classList.add('hidden'), 5000);
+            };
+
+            const renderFormularioProduto = (produto = null) => {
+                editingProdutoId = produto ? produto.id : null;
+                const formTitle = produto ? 'Editar Produto' : 'Cadastrar Novo Produto';
+                const buttonText = produto ? 'Atualizar Produto' : 'Salvar Produto';
+                const iconClass = produto ? 'fa-pencil-alt' : 'fa-plus-circle';
+
+                formProdutoContainer.innerHTML = `
+                    <h2 class="text-xl font-semibold mb-4 border-b pb-3"><i class="fa-solid ${iconClass} text-green-500"></i> ${formTitle}</h2>
+                    <form id="form-produto">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="nome" class="form-label">Nome do Produto</label>
+                                <input type="text" id="nome" name="nome" class="form-input" required value="${produto?.nomeProduto || ''}">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="valorCusto" class="form-label">Valor de Custo (R$)</label>
+                                    <input type="number" id="valorCusto" name="valorCusto" step="0.01" class="form-input" required value="${produto?.valorCusto || ''}">
+                                </div>
+                                <div>
+                                    <label for="valorVenda" class="form-label">Valor de Venda (R$)</label>
+                                    <input type="number" id="valorVenda" name="valorVenda" step="0.01" class="form-input" required value="${produto?.valorVenda || ''}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex items-center justify-between">
+                            <button type="submit" class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition w-full">
+                                <i class="fa-solid fa-save"></i> ${buttonText}
+                            </button>
+                            ${produto ? '<button type="button" id="btn-cancelar-edicao" class="ml-4 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition">Cancelar</button>' : ''}
+                        </div>
+                    </form>
+                `;
+                document.getElementById('form-produto').addEventListener('submit', handleFormSubmit);
+                if (produto) {
+                    document.getElementById('btn-cancelar-edicao').addEventListener('click', () => renderFormularioProduto());
+                }
+            };
+            
+            const handleFormSubmit = async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const formData = new FormData(form);
+                const produtoData = {
+                    nomeProduto: formData.get('nome'),
+                    valorCusto: parseFloat(formData.get('valorCusto')),
+                    valorVenda: parseFloat(formData.get('valorVenda')),
+                    quantidade: 0
+                };
+
+                try {
+                    const token = localStorage.getItem('authToken');
+                    await apiFetchDefaultResponse('/produtos/registro', {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${token}` },
+                        body: JSON.stringify(produtoData)
+                });
+                    
+                    showMessage(produtosMessage, `Produto ${editingProdutoId ? 'atualizado' : 'cadastrado'} com sucesso!`, 'sucesso');
+                    form.reset();
+                    renderFormularioProduto();
+                    fetchProdutos();
+                } catch (error) {
+                    showMessage(produtosMessage, `Erro: ${error.message}`, 'erro');
+                }
+            };
+            
+            const fetchProdutos = async () => {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const data = await apiFetch('/produtos/listar', {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    renderTabelaProdutos(data);
+                } catch (error) {
+                    showMessage(produtosMessage, 'Falha ao carregar produtos.', 'erro');
+                }
+            };
+            
+            const renderTabelaProdutos = (data) => {
+                tabelaProdutos.innerHTML = !data || data.length === 0
+                    ? `<tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">Nenhum produto cadastrado.</td></tr>`
+                    : data.map(produto => `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm">${produto.id}</td>
+                            <td class="px-6 py-4 text-sm font-medium">${produto.nomeProduto}</td>
+                            <td class="px-6 py-4 text-sm">${produto.valorCusto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                            <td class="px-6 py-4 text-sm">${produto.valorVenda.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                            <td class="px-6 py-4 text-sm">${produto.quantidade}</td>
+                            <td class="px-6 py-4 text-center btn-actions">
+                                <button data-id="${produto.id}" class="btn-excluir text-red-600 hover:text-red-800" title="Excluir">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>`).join('');
+            };
+            
+            tabelaProdutos.addEventListener('click', async (e) => {
+                const deleteBtn = e.target.closest('.btn-excluir');
+                const token = localStorage.getItem('authToken');
+
+                if (deleteBtn) {
+                    const id = deleteBtn.dataset.id;
+                    if (confirm(`Tem certeza que deseja excluir o produto ID ${id}?`)) {
+                        try {
+                           await apiFetch(`/produtos/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+                           showMessage(produtosMessage, 'Produto excluído com sucesso!', 'sucesso');
+                           fetchProdutos();
+                        } catch(error) { 
+                            showMessage(produtosMessage, `Erro: ${error.message}`, 'erro'); 
+                        }
+                    }
+                }
+            });
+            renderFormularioProduto();
+            fetchProdutos();
+        });
+    </script>
+</body>
+</html>

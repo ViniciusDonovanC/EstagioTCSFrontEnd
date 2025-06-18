@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendas - Sistema de Farmácia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+        }
+
+        @keyframes fadeIn { 
+            from { 
+                opacity: 0; transform: translateY(-10px); 
+            } 
+            to { 
+                opacity: 1; transform: translateY(0); 
+            } 
+        }
+
+        .page-content { 
+            animation: fadeIn 0.4s ease-in-out; 
+        }
+
+        #vendas-chart-view { 
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 20px;
+        }
+
+        #vendas-chart { max-height: 100%;
+            width: 100%;
+        }
+
+        .summary-table th, .summary-table td { padding: 0.75rem 1rem;
+            text-align: left;
+        }
+
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="page-content">
+        <nav class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="text-xl font-bold text-gray-800"><i class="fa-solid fa-cash-register text-green-500"></i> Gerenciar Vendas</div>
+                <a href="dashboard.html" class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition">
+                    <i class="fa-solid fa-arrow-left"></i> Voltar ao Início
+                </a>
+            </div>
+        </nav>
+        <div class="container mx-auto p-4 md:p-8">
+            <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 space-y-6">
+                    <div id="nova-venda-container" class="bg-white p-6 rounded-lg shadow-md min-h-[400px]">
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow-md">
+                        <div class="p-6 border-b flex flex-wrap justify-between items-center gap-4">
+                            <h2 class="text-xl font-semibold"><i class="fa-solid fa-receipt text-blue-500"></i> Vendas Registradas</h2>
+                        
+                            <div class="flex items-center gap-4">
+                                <div id="sales-view-options" class="inline-flex rounded-md shadow-sm" role="group">
+                                    <button type="button" data-view="realizadas" class="view-btn bg-blue-600 text-white px-4 py-2 text-sm font-medium border border-gray-200 rounded-l-lg hover:bg-blue-700">
+                                        <i class="fa-solid fa-check-circle mr-2"></i>Realizadas
+                                    </button>
+                                    <button type="button" data-view="programadas" class="view-btn bg-white text-gray-900 px-4 py-2 text-sm font-medium border-t border-b border-r border-gray-200 hover:bg-gray-100">
+                                        <i class="fa-solid fa-clock mr-2"></i>Programadas
+                                    </button>
+                                </div>
+                        
+                                <button id="toggle-view-btn-vendas" class="bg-teal-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-600 transition">
+                                    <i class="fa-solid fa-chart-bar"></i> Visualizar Gráfico
+                                </button>
+                            </div>
+                        </div>
+                        <div id="vendas-message" class="p-4 text-center hidden"></div>
+                        <div id="vendas-list-view" class="overflow-x-auto p-4">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Funcionário</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-vendas" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                        <div id="vendas-chart-view" class="p-4 hidden">
+                            <canvas id="vendas-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const novaVendaContainer = document.getElementById('nova-venda-container');
+            const vendasMessage = document.getElementById('vendas-message');
+            const tabelaVendas = document.getElementById('tabela-vendas');
+            const toggleViewBtnVendas = document.getElementById('toggle-view-btn-vendas');
+            const vendasListView = document.getElementById('vendas-list-view');
+            const vendasChartView = document.getElementById('vendas-chart-view');
+            const salesViewOptions = document.getElementById('sales-view-options');
+            const viewButtons = salesViewOptions.querySelectorAll('.view-btn');
+            let vendaAtual = 'realizadas';
+
+            const url = 'http://localhost:8080';
+            
+            let itensDaVendaAtual = [];
+            let vendaAtivaId = null;
+            let currentVendasView = 'list';
+            let vendasChartInstance = null;
+            let todosOsProdutos = [];
+            let todasAsVendas = []; 
+
+            async function apiFetch(endpoint, options = {}) {
+                const config = {
+                    method: options.method || 'GET',
+                    headers: { 'Content-Type': 'application/json', ...options.headers },
+                }
+                if (options.body) { config.body = options.body; }
+                try {
+                    const response = await fetch(`${url}${endpoint}`, config);
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                        throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
+                    }
+                    if (response.status === 204) return null;
+                    return response.json();
+                } catch (error) {
+                    console.error(`Erro na chamada da API para ${endpoint}:`, error);
+                    alert(`Erro de comunicação com o servidor: ${error.message}`);
+                    throw error;
+                }
+            }
+            
+            async function apiFetchDefaultResponse(endpoint, options = {}) {
+                const config = {
+                    method: options.method || 'GET',
+                    headers: { 'Content-Type': 'application/json', ...options.headers, },
+                }
+                if (options.body)config.body = options.body;
+                try {
+                    const response = await fetch(`${url}${endpoint}`, config);
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                        throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error(`Erro na chamada da API para ${endpoint}:`, error);
+                    alert(`Erro de comunicação com o servidor: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            const showMessage = (element, text, type = 'sucesso') => {
+                element.textContent = text;
+                element.className = `p-4 text-center rounded-md mx-4 my-2 ${type === 'sucesso' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+                element.classList.remove('hidden');
+                setTimeout(() => element.classList.add('hidden'), 5000);
+            }
+
+            const renderBotaoIniciarVenda = () => {
+                novaVendaContainer.innerHTML = `
+                    <div class="text-center flex flex-col items-center justify-center h-full">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-700">Painel de Vendas</h2>
+                        <p class="text-gray-500 mb-6">Clique no botão abaixo para registrar uma nova venda de produtos.</p>
+                        <div>
+                            <label for="entry-data-venda" class="text-sm text-gray-600">Data da Venda</label>
+                            <input type="date" id="entry-data-venda" class="w-full p-2 border border-gray-300 rounded-md">
+                        </div>
+                        
+                        <button id="iniciar-venda-btn" class="w-full mt-6 bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 shadow-lg hover:shadow-xl transition-all">
+                            <i class="fa-solid fa-cart-plus mr-2"></i> Iniciar Nova Venda
+                        </button>
+                    </div>
+                `;
+                document.getElementById('iniciar-venda-btn').addEventListener('click', handleIniciarVenda);
+            }
+
+            const handleIniciarVenda = async (e) => {
+                const btn = e.target.closest('button');
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Gerando ID da Venda...`;
+                
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const dataSelecionada = document.getElementById('entry-data-venda').value;
+                    if (!dataSelecionada) {
+                        alert('Por favor, selecione uma data para a venda.');
+                        btn.disabled = false;
+                        btn.innerHTML = 'Iniciar Nova Venda';
+                        return;
+                    }
+                    const data = new Date(dataSelecionada);
+                    
+                    data.setDate(data.getDate() + 1);
+
+                    const dataVenda = data.toISOString();
+                    const novaVenda = await apiFetch('/venda/vender', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ dataVenda: dataVenda, totalVenda: 0 }),
+                    });
+
+                    vendaAtivaId = novaVenda;
+                    renderFormularioVenda(vendaAtivaId);
+
+                } catch (error) {
+                    alert('Erro ao iniciar nova venda. Tente novamente.');
+                    renderBotaoIniciarVenda();
+                }
+            }
+
+            const renderFormularioVenda = (idVenda) => {
+                novaVendaContainer.innerHTML = `
+                    <h2 class="text-xl font-semibold mb-4 border-b pb-3 flex justify-between items-center">
+                        <span><i class="fa-solid fa-cart-shopping text-green-500"></i> Nova Venda</span>
+                        <span class="font-bold text-green-600 text-base py-1 px-2 bg-green-100 rounded">ID: #${idVenda}</span>
+                    </h2>
+                    <form id="form-venda-ativa">
+                        <hr class="my-6 border-t-2 border-dashed">
+                        <div class="p-4 bg-gray-50 border rounded-lg"><h3 class="text-lg font-medium text-gray-800 mb-3">Adicionar Produto</h3><div id="item-entry-form" class="space-y-3">
+                            <div><label class="text-sm text-gray-600">Produto</label><select id="entry-produto-select" class="w-full p-2 border border-gray-300 rounded-md"></select></div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div><label class="text-sm text-gray-600">Preço Unit. (R$)</label><input type="text" id="entry-preco" readonly class="w-full p-2 bg-gray-200 border rounded-md"></div>
+                                <div><label class="text-sm text-gray-600">Quantidade</label><input type="number" id="entry-quantidade" min="1" value="1" class="w-full p-2 border border-gray-300 rounded-md"></div>
+                            </div>
+                            <button type="button" id="add-item-to-sell-btn" class="w-full mt-2 bg-blue-600 text-white font-semibold py-2 rounded-md hover:bg-blue-700"><i class="fa-solid fa-plus"></i> Adicionar à Venda</button>
+                        </div></div>
+                        <hr class="my-6">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-800 mb-2">Itens na Venda</h3>
+                            <div id="itens-adicionados-container" class="bg-white p-2 rounded-lg border min-h-[50px]"><table class="w-full summary-table"><tbody id="itens-adicionados-tbody"></tbody></table></div>
+                        </div>
+                        <div class="flex justify-end items-center mt-4"><label class="text-lg font-bold text-gray-800 mr-4">VALOR TOTAL:</label><input type="text" id="venda-total-display" readonly class="w-40 text-right text-xl font-bold p-2 bg-gray-200 rounded-md" value="R$ 0,00"></div>
+                        <button type="submit" class="w-full mt-6 bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-700"><i class="fa-solid fa-floppy-disk"></i> Finalizar e Registrar Venda</button>
+                    </form>
+                `;
+
+                const produtoSelect = document.getElementById('entry-produto-select');
+                produtoSelect.innerHTML = '<option value="">Selecione um produto</option>';
+
+                buscarProdutos().then(produtos => {
+                    todosOsProdutos = produtos;
+                    produtos
+                        .filter(p => p.quantidade > 0)
+                        .forEach(p => {
+                            const textoOpcao = `${p.nomeProduto} (Estoque: ${p.quantidade})`;
+                            const option = new Option(textoOpcao, p.id);
+                            option.dataset.preco = p.valorVenda; 
+                            option.dataset.qtd = p.quantidade;
+                            produtoSelect.appendChild(option);
+                        });
+                    produtoSelect.addEventListener('change', handleProdutoSelection);
+                })
+                document.getElementById('add-item-to-sell-btn').addEventListener('click', handleAdicionarItem);
+                document.getElementById('form-venda-ativa').addEventListener('submit', handleFinalizarVenda);
+                renderItensAdicionados();
+            }
+
+            const handleProdutoSelection = (e) => {
+                const precoInput = document.getElementById('entry-preco');
+                const selectedOption = e.target.options[e.target.selectedIndex];
+                precoInput.value = selectedOption.dataset.preco || '';
+            }
+
+            const handleAdicionarItem = async () => {
+                const select = document.getElementById('entry-produto-select');
+                const produtoId = parseInt(select.value, 10);
+                const quantidade = parseInt(document.getElementById('entry-quantidade').value, 10);
+
+                const selectedOption = select.options[select.selectedIndex]; //TODO verificar aqui
+                const quantidadeEmEstoque = selectedOption.dataset.qtd;
+
+                if(quantidade>quantidadeEmEstoque){
+                    alert('Você não tem estoque suficiente.'); 
+                    return;
+                }
+                if(!produtoId || isNaN(quantidade) || quantidade < 1) {
+                    alert('Selecione um produto e uma quantidade válida.'); 
+                    return;
+                }
+
+                const addButton = document.getElementById('add-item-to-sell-btn');
+                addButton.disabled = true;
+                addButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Adicionando...`;
+                const token = localStorage.getItem('authToken');
+                try {
+                    const itemParaEnviar = { idVenda: vendaAtivaId, idProduto: produtoId, qtdVendaProduto: quantidade }
+                    await apiFetchDefaultResponse(`/venda/adicionar`, {
+                        method: 'POST',
+                        body: JSON.stringify(itemParaEnviar), 
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+
+                    const produtoSelecionado = todosOsProdutos.find(p => p.id === produtoId);
+                    const itemExistente = itensDaVendaAtual.find(i => i.produtoId === produtoId);
+                    
+                    if(itemExistente) {
+                        itemExistente.quantidade += quantidade;
+                        itemExistente.subtotal = itemExistente.quantidade * produtoSelecionado.valorVenda;
+                    }else{
+                         itensDaVendaAtual.push({
+                            produtoId: produtoSelecionado.id,
+                            produtoNome: produtoSelecionado.nomeProduto,
+                            quantidade: quantidade,
+                            precoUnitario: produtoSelecionado.valorVenda, 
+                            subtotal: quantidade * produtoSelecionado.valorVenda
+                        })
+                    }
+                   
+                    renderItensAdicionados();
+                    atualizarTotalVenda();
+                    
+                    select.value = "";
+                    document.getElementById('entry-preco').value = "";
+                    document.getElementById('entry-quantidade').value = "1";
+                }catch(error){
+                    alert(`Erro ao adicionar item: ${error.message}`);
+                }finally{
+                    addButton.disabled = false;
+                    addButton.innerHTML = `<i class="fa-solid fa-plus"></i> Adicionar à Venda`;
+                }
+            }
+            
+            async function buscarProdutos(){
+                try{
+                    const token = localStorage.getItem('authToken');
+                    return await apiFetch('/produtos/listar',{ headers:{ Authorization: `Bearer ${token}` } });
+                } catch (error) {
+                    console.error("Falha ao buscar produtos:", error);
+                    alert("Não foi possível carregar a lista de produtos.");
+                    return []; 
+                }
+            }
+
+            const renderItensAdicionados = () => {
+                const tbody = document.getElementById('itens-adicionados-tbody');
+                if (!tbody) return;
+                tbody.innerHTML = itensDaVendaAtual.length === 0
+                    ? '<tr><td colspan="4" class="text-center text-gray-500 py-4">Nenhum item adicionado.</td></tr>'
+                    : itensDaVendaAtual.map(item => `
+                        <tr class="border-b border-gray-200 last:border-b-0">
+                            <td class="font-medium text-gray-700 py-2 px-2">${item.produtoNome}</td>
+                            <td class="text-gray-600 py-2 px-2">x ${item.quantidade}</td>
+                            <td class="text-right py-2 px-2">${parseFloat(item.precoUnitario).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                            <td class="font-semibold text-right py-2 px-2">${parseFloat(item.subtotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                        </tr>`).join('');
+            }                  
+
+            const atualizarTotalVenda = () => {
+                const totalDisplay = document.getElementById('venda-total-display');
+                if (!totalDisplay) return;
+                const totalGeral = itensDaVendaAtual.reduce((acc, item) => acc + item.subtotal, 0);
+
+                totalDisplay.value = parseFloat(totalGeral).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            }
+
+            const handleFinalizarVenda = async (e) => {
+                e.preventDefault(); 
+                await fetchVendas(vendaAtual);
+                itensDaVendaAtual = [];
+                vendaAtivaId = null;
+                renderBotaoIniciarVenda();
+                showMessage(vendasMessage, 'A lista de vendas foi atualizada.', 'sucesso');
+            }
+            
+            const fetchVendas = async (vendaAtual) => {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const data = await apiFetch('/venda/listar', {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    });
+
+                    todasAsVendas = data || []; 
+
+                    renderFilteredVendas(vendaAtual);
+                } catch (error) {
+                    showMessage(vendasMessage, error.message, 'erro');
+                }
+            }
+
+            const renderFilteredVendas = (filter) => {
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+                console.log(hoje)
+                console.log(filter)
+
+                let vendasFiltradas = [];
+
+                if (filter === 'realizadas') {
+                    vendasFiltradas = todasAsVendas.filter(venda => {
+                        const dataVenda = new Date(venda.dataVenda);
+                        return dataVenda <= hoje;
+                    });
+                } else {
+                    vendasFiltradas = todasAsVendas.filter(venda => {
+                        const dataVenda = new Date(venda.dataVenda);
+                        return dataVenda > hoje;
+                    });
+                }
+                renderTabelaVendas(vendasFiltradas);
+                if (currentVendasView === 'chart') {
+                    renderVendasChart(vendasFiltradas);
+                }
+            }
+
+            const renderTabelaVendas = (data) => {
+                tabelaVendas.innerHTML = !data || data.length === 0
+                    ? `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Nenhuma venda registrada.</td></tr>`
+                    : data.map(venda => `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm">${venda.idVenda}</td>
+                            <td class="px-6 py-4 text-sm font-medium">${venda.nomeFuncionario}</td>
+                            <td class="px-6 py-4 text-sm">${new Date(venda.dataVenda).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
+                            <td class="px-6 py-4 text-sm font-semibold">${parseFloat(venda.totalCompra).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                        </tr>`).join('');
+            }               
+
+            const renderVendasChart = (data) => {
+                if (vendasChartInstance) vendasChartInstance.destroy();
+                const ctx = document.getElementById('vendas-chart').getContext('2d');
+                const salesByDate = data.reduce((acc, sale) => {
+                    const date = new Date(sale.dataVenda).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+                    
+                    acc[date] = (acc[date] || 0) + sale.totalCompra;
+                    return acc;
+                }, {});
+                const sortedDates = Object.keys(salesByDate).sort((a, b) => {
+                    const dateA = a.split('/').reverse().join('-');
+                    const dateB = b.split('/').reverse().join('-');
+                    return new Date(dateA) - new Date(dateB);
+                });
+                
+                vendasChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: { 
+                        labels: sortedDates, 
+                        datasets: [{
+                            label: 'Receita Total em Vendas (R$)', 
+                            data: sortedDates.map(date => salesByDate[date]),
+                            backgroundColor: 'rgba(75, 192, 192, 0.7)', 
+                            borderColor: 'rgba(75, 192, 192, 1)', 
+                            borderWidth: 1
+                        }]
+                    }, 
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        scales: { 
+                            y: { beginAtZero: true } 
+                        } 
+                    }
+                });
+            }
+
+            renderBotaoIniciarVenda();
+            fetchVendas(vendaAtual);
+
+            toggleViewBtnVendas.addEventListener('click', () => {
+                const isList = currentVendasView === 'list';
+                vendasListView.classList.toggle('hidden', isList);
+                vendasChartView.classList.toggle('hidden', !isList);
+                toggleViewBtnVendas.innerHTML = isList ? '<i class="fa-solid fa-list"></i> Ver Lista' : '<i class="fa-solid fa-chart-bar"></i> Ver Gráfico';
+                currentVendasView = isList ? 'chart' : 'list';
+                if (currentVendasView === 'chart') fetchVendas(vendaAtual);
+            });
+
+            salesViewOptions.addEventListener('click', (e) => {
+                const clickedButton = e.target.closest('.view-btn')
+                if(!clickedButton) return
+                const selectedView = clickedButton.dataset.view
+                if(selectedView === vendaAtual) return
+                vendaAtual = selectedView;
+                viewButtons.forEach(button => {
+                    const isSelected = button.dataset.view === vendaAtual;
+                    button.classList.toggle('bg-blue-600', isSelected);
+                    button.classList.toggle('text-white', isSelected);
+                    button.classList.toggle('bg-white', !isSelected);
+                    button.classList.toggle('text-gray-900', !isSelected);
+                });
+                fetchVendas(vendaAtual);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sistema de Gestão de Farmácia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+        }
+
+        @keyframes fadeIn { 
+            from { 
+                opacity: 0; transform: translateY(-10px); 
+            } 
+            to { 
+                opacity: 1; transform: translateY(0); 
+            } 
+        }
+
+        .page-content { 
+            animation: fadeIn 0.4s ease-in-out; 
+        }
+
+        .dashboard-card { 
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; 
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="page-content">
+        <nav class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="text-xl font-bold text-gray-800"><i class="fa-solid fa-house-medical text-green-500"></i> Início</div>
+                <div class="flex items-center bg-green-100 text-green-800 text-lg font-bold px-4 py-2 rounded-lg">
+                    <i class="fa-solid fa-dollar-sign mr-2"></i>
+                    <span id="valor-caixa-display">R$ 0,00</span>
+                </div>
+                <a href="index.html" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair
+                </a>
+            </div>
+        </nav>
+        <div class="container mx-auto p-6">
+            <h1 class="text-3xl font-bold mb-6">Painel de Controle</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <a href="transportadoras.html" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-blue-100 rounded-full"><i class="fa-solid fa-truck-fast text-2xl text-blue-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Transportadoras</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Gerenciar parceiros de logística.</p>
+                </a>
+                <a href="vendas.html" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-green-100 rounded-full"><i class="fa-solid fa-cash-register text-2xl text-green-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Vendas</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Registrar e consultar vendas.</p>
+                </a>
+                <a href="compras.html" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-yellow-100 rounded-full"><i class="fa-solid fa-box-archive text-2xl text-yellow-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Compras</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Gerenciar compras de produtos.</p>
+                </a>
+                <a href="setor.html" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-pink-100 rounded-full"><i class="fa-solid fa-briefcase text-2xl text-pink-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Setores</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Organizar e gerenciar departamentos.</p>
+                </a>
+                <a href="funcionarios.html" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-purple-100 rounded-full"><i class="fa-solid fa-users text-2xl text-purple-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Funcionários</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Organizar e gerenciar Funcionários.</p>
+                </a>
+
+                <a href="produtos.html" class="dashboard-card bg-white p-6 rounded-lg shadow-md cursor-pointer">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-indigo-100 rounded-full"><i class="fa-solid fa-pills text-2xl text-indigo-600"></i></div>
+                        <h2 class="text-xl font-semibold ml-4">Produtos</h2>
+                    </div>
+                    <p class="text-gray-600 mt-2">Criar e verificar produtos.</p>
+                </a>
+            </div>
+            <div class="mt-12"> 
+                <div class="flex justify-between items-center mb-6">
+        
+                    <h2 class="text-2xl font-bold">Relatórios de Lucratividade</h2>
+                
+                    <div id="lucros-view-options" class="inline-flex rounded-md shadow-sm" role="group">
+                        <button type="button" data-view="atual" class="view-btn bg-blue-600 text-white px-4 py-2 text-sm font-medium border border-gray-200 rounded-l-lg hover:bg-blue-700">
+                            <i class="fa-solid fa-check-circle mr-2"></i>Atual
+                        </button>
+                        <button type="button" data-view="estimado" class="view-btn bg-white text-gray-900 px-4 py-2 text-sm font-medium border-t border-b border-r border-gray-200 hover:bg-gray-100">
+                            <i class="fa-solid fa-clock mr-2"></i>Estimado
+                        </button>
+                    </div>
+            
+                </div>
+            
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4"><i class="fa-solid fa-chart-line text-green-500"></i> Lucro Mensal</h3>
+                        <div class="h-80 md:h-96">
+                            <canvas id="lucro-mensal-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4"><i class="fa-solid fa-chart-bar text-blue-500"></i> Lucro Anual</h3>
+                        <div class="h-80 md:h-96">
+                            <canvas id="lucro-anual-chart"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const url = 'http://localhost:8080';
+            let charLucroMensal = null;
+            let chartLucroAnual = null;
+            const lucrosViewsOption = document.getElementById('lucros-view-options');
+            const btns = lucrosViewsOption.querySelectorAll('.view-btn');
+            const valorCaixaDisplay = document.getElementById('valor-caixa-display');
+            let lucroAtual = 'atual';
+
+            let todosLucrosMensais = [];
+            let todosLucrosAnuais = []; 
+
+
+
+            async function apiFetch(endpoint, options = {}) {
+                const config = {
+                    method: options.method || 'GET',
+                    headers: { 'Content-Type': 'application/json', ...options.headers },
+                }
+                if (options.body) config.body = options.body;
+                try {
+                    const response = await fetch(`${url}${endpoint}`, config);
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                        throw new Error(errorData.message || `Erro na requisição: ${response.status}`);
+                    }
+                    if (response.status === 204) return null;
+                    return response.json();
+                } catch (error) {
+                    console.error(`Erro na chamada da API para ${endpoint}:`, error);
+                    alert(`Erro de comunicação com o servidor: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            const renderLucroMensalChart = (data) => {
+                if (charLucroMensal) charLucroMensal.destroy();
+                    const ctx = document.getElementById('lucro-mensal-chart').getContext('2d');
+                    const labels = data.map(item => `${String(item.mes).padStart(2, '0')}/${item.ano}`);
+                    const chartData = data.map(item => item.lucro);
+
+                    charLucroMensal = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Lucro Mensal (R$)',
+                                data: chartData,
+                                backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value, index, values) {
+                                            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            if (context.parsed.y !== null) {
+                                                label += context.parsed.y.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                };
+
+                const renderLucroAnualChart = (data) => {
+                    if (chartLucroAnual) chartLucroAnual.destroy();
+                    const ctx = document.getElementById('lucro-anual-chart').getContext('2d');
+                    
+                    const labels = data.map(item => item.ano);
+                    const chartData = data.map(item => item.lucro);
+
+                    chartLucroAnual = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Lucro Anual (R$)',
+                                data: chartData,
+                                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: { y: { beginAtZero: true, ticks: { callback: (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) } } },
+                            plugins: { tooltip: { callbacks: { label: (context) => 'Lucro: ' + context.parsed.y.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) } } }
+                        }
+                    });
+                };
+
+                const fetchLucros = async () => {
+                    try {
+                        const token = localStorage.getItem('authToken');
+                        
+                        const lucroMensalData = await apiFetch('/farmacia/mensal', { headers: { Authorization: `Bearer ${token}` } });
+                        todosLucrosMensais = lucroMensalData || [];
+                        console.log(todosLucrosMensais)
+
+                        const lucroAnualData = await apiFetch('/farmacia/anual', { headers: { Authorization: `Bearer ${token}` } });
+                        todosLucrosAnuais = lucroAnualData || [];
+                        console.log(todosLucrosAnuais)
+
+                        renderLucrosFiltrados(lucroAtual);
+
+                    } catch (error) {
+                        console.error("Erro ao buscar relatórios de lucro:", error);
+                        alert("Não foi possível carregar os dados de lucratividade.");
+                    }
+                };
+
+                const fetchValorCaixa = async () => {
+                    try {
+                        const token = localStorage.getItem('authToken');
+                        const responseData = await apiFetch('/farmacia/caixa', { 
+                            headers: { Authorization: `Bearer ${token}` } 
+                        });
+
+                        console.log(responseData);
+
+                        if (responseData && typeof responseData.caixa !== 'undefined') {
+                            const valorFormatado = responseData.caixa.toLocaleString('pt-BR', { 
+                                style: 'currency', 
+                                currency: 'BRL' 
+                            });
+                            valorCaixaDisplay.textContent = valorFormatado;
+                        }
+
+                    } catch (error) {
+                        console.error("Erro ao buscar valor do caixa:", error);
+                        valorCaixaDisplay.textContent = "Erro";
+                        valorCaixaDisplay.parentElement.classList.remove('bg-green-100', 'text-green-800');
+                        valorCaixaDisplay.parentElement.classList.add('bg-red-100', 'text-red-800');
+                    }
+                };
+
+                const renderLucrosFiltrados = (filter) => {
+                    const hoje = new Date();
+                    hoje.setHours(0, 0, 0, 0); 
+                    const anoAtual = hoje.getFullYear();
+
+                    let lucrosMensaisFiltrados = [];
+                    let lucrosAnuaisFiltrados = [];
+                    if (filter === 'atual') {
+                        lucrosMensaisFiltrados = todosLucrosMensais.filter(item => {
+                            const dataItem = new Date(item.ano, item.mes - 1);
+                            return dataItem < hoje;
+                        });
+
+                        lucrosAnuaisFiltrados = todosLucrosAnuais.filter(item => item.ano < anoAtual);
+
+                    } else {
+                        lucrosMensaisFiltrados = todosLucrosMensais.filter(item => {
+                            const dataItem = new Date(item.ano, item.mes - 1);
+                            return dataItem >= hoje;
+                        });
+
+                        lucrosAnuaisFiltrados = todosLucrosAnuais.filter(item => item.ano >= anoAtual);
+                    }
+
+                    renderLucroMensalChart(lucrosMensaisFiltrados);
+                    renderLucroAnualChart(lucrosAnuaisFiltrados);
+                };
+
+                lucrosViewsOption.addEventListener('click', (e) => {
+                    const clickedButton = e.target.closest('.view-btn')
+                    if(!clickedButton) return
+                    const selectedView = clickedButton.dataset.view
+                    if(selectedView === lucroAtual) return
+                    lucroAtual = selectedView;
+                    btns.forEach(button => {
+                        const isSelected = button.dataset.view === lucroAtual;
+                        button.classList.toggle('bg-blue-600', isSelected);
+                        button.classList.toggle('text-white', isSelected);
+                        button.classList.toggle('bg-white', !isSelected);
+                        button.classList.toggle('text-gray-900', !isSelected);
+                    });
+                    fetchLucros(lucroAtual);
+                });
+                fetchLucros(lucroAtual);
+                fetchValorCaixa();
+            });
+    </script>
+</body>
+</html>
