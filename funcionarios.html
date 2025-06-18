@@ -87,6 +87,27 @@
                     throw error;
                 }
             };
+
+            const apiFetchDefaultResponse = async (endpoint, options = {}) => {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    alert('Sessão expirada. Redirecionando para o login.');
+                    window.location.href = 'index.html';
+                    throw new Error('Token não encontrado.');
+                }
+                const config = { method: options.method || 'GET', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...options.headers } };
+                if (options.body) { config.body = JSON.stringify(options.body); }
+                try {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(errorText || 'Erro na requisição');
+                    }
+                } catch (error) {
+                    showMessage(appMessage, error.message, 'erro');
+                    throw error;
+                }
+            }
             
             const showMessage = (element, text, type = 'sucesso') => {
                 element.innerHTML = `<div class="p-3 my-2 rounded-md ${type === 'sucesso' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${text}</div>`;
@@ -171,7 +192,7 @@
 
                 try {
                     
-                    await apiFetch('/funcionario/adicionar', { method: 'POST', body: formData });
+                    await apiFetchDefaultResponse('/funcionario/adicionar', { method: 'POST', body: formData });
                     showMessage(appMessage, 'Funcionário salvo com sucesso!', 'sucesso');
                     e.target.reset();
                     fetchFuncionarios();
