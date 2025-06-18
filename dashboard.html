@@ -252,11 +252,13 @@
                 const fetchLucros = async () => {
                     try {
                         const token = localStorage.getItem('authToken');
+
+                        console.log(token)
                         
                         const lucroMensalData = await apiFetch('/farmacia/mensal', { headers: { Authorization: `Bearer ${token}` } });
                         todosLucrosMensais = lucroMensalData || [];
 
-                        const lucroAnualData = await apiFetch('/farmacia/mensal', { headers: { Authorization: `Bearer ${token}` } });
+                        const lucroAnualData = await apiFetch('/farmacia/anual', { headers: { Authorization: `Bearer ${token}` } });
                         todosLucrosAnuais = lucroAnualData || [];
 
                         renderLucrosFiltrados(currentLucroView);
